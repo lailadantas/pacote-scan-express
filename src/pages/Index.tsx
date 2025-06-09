@@ -1,13 +1,23 @@
-
+import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
 import { ScanLine, Tag, Settings, Download, Upload } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('Usuário');
+
+  useEffect(() => {
+    // Recupera o nome do usuário do localStorage
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      const userData = JSON.parse(currentUser);
+      setUserName(userData.name || 'Usuário');
+    }
+  }, []);
 
   return (
-    <MobileLayout title="Olá, {user_name}!">
+    <MobileLayout title={`Olá, ${userName}!`}>
       <div className="p-4 space-y-4">
         {/* Iniciar Bipagem - Card Principal */}
         <button

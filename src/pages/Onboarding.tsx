@@ -1,3 +1,4 @@
+
 import { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,62 +9,32 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import Package3D from '@/components/Package3D';
 
 const OnboardingScene1 = () => (
-  <div className="w-full h-[300px]">
-    <Canvas>
-      <Suspense fallback={null}>
-        <PerspectiveCamera makeDefault position={[0, 2, 8]} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <Package3D position={[-2, 0, 0]} color="#3B82F6" />
-        <Package3D position={[0, 0, 0]} color="#8B5CF6" />
-        <Package3D position={[2, 0, 0]} color="#F59E0B" />
-        <Environment preset="warehouse" />
-        <OrbitControls enableZoom={false} />
-      </Suspense>
-    </Canvas>
+  <div className="w-full h-[300px] flex items-center justify-center">
+    <img 
+      src="/lovable-uploads/bcae71b1-29e8-42b8-9f9f-4463b3075276.png" 
+      alt="Bipagem Inteligente"
+      className="max-w-full max-h-full object-contain"
+    />
   </div>
 );
 
 const OnboardingScene2 = () => (
-  <div className="w-full h-[300px]">
-    <Canvas>
-      <Suspense fallback={null}>
-        <PerspectiveCamera makeDefault position={[0, 2, 8]} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <Package3D position={[-1, 0, 0]} color="#10B981" scale={0.8} />
-        <Package3D position={[1, 0, 0]} color="#EF4444" scale={0.8} />
-        <Package3D position={[0, 1.5, 0]} color="#8B5CF6" scale={1.2} />
-        <Environment preset="warehouse" />
-        <OrbitControls enableZoom={false} />
-      </Suspense>
-    </Canvas>
+  <div className="w-full h-[300px] flex items-center justify-center">
+    <img 
+      src="/lovable-uploads/6c576fd1-60b2-4a95-a196-592b4688780a.png" 
+      alt="Gestão de Rotas"
+      className="max-w-full max-h-full object-contain"
+    />
   </div>
 );
 
 const OnboardingScene3 = () => (
-  <div className="w-full h-[300px]">
-    <Canvas>
-      <Suspense fallback={null}>
-        <PerspectiveCamera makeDefault position={[0, 2, 8]} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        {Array.from({ length: 6 }, (_, i) => (
-          <Package3D
-            key={i}
-            position={[
-              (i % 3 - 1) * 1.5,
-              Math.floor(i / 3) * 1.5,
-              0
-            ]}
-            color={i % 2 === 0 ? '#3B82F6' : '#8B5CF6'}
-            scale={0.7}
-          />
-        ))}
-        <Environment preset="warehouse" />
-        <OrbitControls enableZoom={false} />
-      </Suspense>
-    </Canvas>
+  <div className="w-full h-[300px] flex items-center justify-center">
+    <img 
+      src="/lovable-uploads/1a9c1056-a079-4473-9764-fc7066e31d36.png" 
+      alt="Controle Total"
+      className="max-w-full max-h-full object-contain"
+    />
   </div>
 );
 
@@ -139,7 +110,7 @@ const Onboarding = () => {
             transition={{ duration: 0.3 }}
             className="h-full flex flex-col justify-center"
           >
-            {/* 3D Scene */}
+            {/* Image Scene */}
             <div className="mb-8">
               <CurrentScene />
             </div>

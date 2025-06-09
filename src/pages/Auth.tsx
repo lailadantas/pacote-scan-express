@@ -26,13 +26,40 @@ const Auth = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simular autenticação bem-sucedida
-    navigate('/');
+    
+    if (isLogin) {
+      // Para login, verifica se existe usuário salvo
+      const savedUser = localStorage.getItem('userData');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        navigate('/home');
+      } else {
+        // Se não existe usuário, cria um com dados básicos
+        const userData = { name: 'Usuário', email: formData.email };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        navigate('/home');
+      }
+    } else {
+      // Para cadastro, salva os dados do usuário
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone
+      };
+      localStorage.setItem('userData', JSON.stringify(userData));
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      navigate('/home');
+    }
   };
 
   const handleGoogleLogin = () => {
     // Simular login com Google
-    navigate('/');
+    const userData = { name: 'Usuário Google', email: 'usuario@google.com' };
+    localStorage.setItem('userData', JSON.stringify(userData));
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+    navigate('/home');
   };
 
   return (
