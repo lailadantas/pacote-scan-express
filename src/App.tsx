@@ -27,6 +27,11 @@ import NaoPudeEntregar from "./pages/NaoPudeEntregar";
 import MotivoEntrega from "./pages/MotivoEntrega";
 import RegistroSucesso from "./pages/RegistroSucesso";
 import RotaFinalizada from "./pages/RotaFinalizada";
+import Coletar from "./pages/Coletar";
+import DadosRemetente from "./pages/DadosRemetente";
+import ColetaSucesso from "./pages/ColetaSucesso";
+import NaoPudeColetar from "./pages/NaoPudeColetar";
+import MotivoColeta from "./pages/MotivoColeta";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +55,11 @@ const App = () => (
           <Route path="/entregasucesso" element={<EntregaSucesso />} />
           <Route path="/naopudeentregar/:id" element={<NaoPudeEntregar />} />
           <Route path="/motivoentrega/:id" element={<MotivoEntrega />} />
+          <Route path="/coletar/:id" element={<Coletar />} />
+          <Route path="/dadosremetente/:id" element={<DadosRemetente />} />
+          <Route path="/coletasucesso" element={<ColetaSucesso />} />
+          <Route path="/naopudecoletar/:id" element={<NaoPudeColetar />} />
+          <Route path="/motivocoleta/:id" element={<MotivoColeta />} />
           <Route path="/registrosucesso" element={<RegistroSucesso />} />
           <Route path="/rotafinalizada" element={<RotaFinalizada />} />
           <Route path="/estoque" element={<Estoque />} />

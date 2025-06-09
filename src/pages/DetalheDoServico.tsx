@@ -108,7 +108,9 @@ const DetalheDoServico = () => {
               className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
             >
               {/* Header do card */}
-              <div className="bg-blue-500 text-white p-3 flex justify-between items-center">
+              <div className={`text-white p-3 flex justify-between items-center ${
+                servico.tipo === 'Coleta' ? 'bg-orange-500' : 'bg-blue-500'
+              }`}>
                 <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
                   {servico.tipo}
                 </span>

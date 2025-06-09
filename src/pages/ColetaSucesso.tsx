@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 
-const EntregaSucesso = () => {
+const ColetaSucesso = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const EntregaSucesso = () => {
       <div className="text-center text-white">
         <CheckCircle className="w-24 h-24 mx-auto mb-6" />
         <h1 className="text-2xl font-bold mb-2">
-          Entrega realizada com sucesso!
+          Coleta realizada com sucesso!
         </h1>
         <p className="text-green-100">
           Redirecionando...
@@ -29,4 +29,4 @@ const EntregaSucesso = () => {
   );
 };
 
-export default EntregaSucesso;
+export default ColetaSucesso;

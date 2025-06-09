@@ -10,8 +10,11 @@ const DetalheDoPonto = () => {
   const { id } = useParams();
   const [foiParaLa, setFoiParaLa] = useState(false);
 
+  // Determinar tipo de serviço baseado no ID (IDs pares = coleta, ímpares = entrega)
+  const isColeta = id ? parseInt(id) % 2 === 0 : false;
+
   const servico = {
-    tipo: "Entrega",
+    tipo: isColeta ? "Coleta" : "Entrega",
     status: "Pendente",
     endereco: {
       rua: "Rua das Flores, 123",
@@ -43,7 +46,9 @@ const DetalheDoPonto = () => {
       <div className="p-4 space-y-6">
         {/* Tags de status */}
         <div className="flex gap-2">
-          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+            isColeta ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+          }`}>
             {servico.tipo}
           </span>
           <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -106,17 +111,17 @@ const DetalheDoPonto = () => {
           ) : (
             <div className="space-y-3">
               <Button 
-                onClick={() => navigate(`/entregar/${id}`)}
+                onClick={() => navigate(isColeta ? `/coletar/${id}` : `/entregar/${id}`)}
                 className="w-full"
               >
-                Entregar
+                {isColeta ? 'Coletar' : 'Entregar'}
               </Button>
               <Button 
-                onClick={() => navigate(`/naopudeentregar/${id}`)}
+                onClick={() => navigate(isColeta ? `/naopudecoletar/${id}` : `/naopudeentregar/${id}`)}
                 variant="outline" 
                 className="w-full"
               >
-                Não pude entregar
+                {isColeta ? 'Não pude coletar' : 'Não pude entregar'}
               </Button>
             </div>
           )}
