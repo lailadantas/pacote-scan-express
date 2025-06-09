@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,6 +41,7 @@ import ColetaSucesso from "./pages/ColetaSucesso";
 import NaoPudeColetar from "./pages/NaoPudeColetar";
 import MotivoColeta from "./pages/MotivoColeta";
 import AssinaturaColeta from "./pages/AssinaturaColeta";
+import Home2 from "./pages/Home2";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +60,7 @@ const App = () => (
           <Route path="/usuariotipoponto" element={<UsuarioTipoPonto />} />
           <Route path="/cadastrosucesso" element={<CadastroSucesso />} />
           <Route path="/home" element={<Index />} />
+          <Route path="/home2" element={<Home2 />} />
           <Route path="/bipagem" element={<Bipagem />} />
           <Route path="/bipagem/digitar-codigo" element={<DigitarCodigo />} />
           <Route path="/dados-transferencia" element={<DadosTransferencia />} />
