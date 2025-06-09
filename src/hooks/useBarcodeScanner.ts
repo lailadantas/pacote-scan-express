@@ -6,7 +6,6 @@ interface UseBarcodeScanner {
   startScanning: () => Promise<void>;
   stopScanning: () => void;
   isScanning: boolean;
-  hasPermission: boolean | null;
   error: string | null;
 }
 
@@ -14,7 +13,6 @@ export const useBarcodeScanner = (
   onDetected: (code: string) => void
 ): UseBarcodeScanner => {
   const [isScanning, setIsScanning] = useState(false);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -50,7 +48,6 @@ export const useBarcodeScanner = (
       });
 
       streamRef.current = stream;
-      setHasPermission(true);
       setIsScanning(true);
 
       if (codeReader.current) {
@@ -74,7 +71,6 @@ export const useBarcodeScanner = (
     } catch (err: any) {
       console.error('Failed to start scanner:', err);
       setError(err.message || 'Failed to access camera');
-      setHasPermission(false);
       setIsScanning(false);
     }
   };
@@ -95,7 +91,6 @@ export const useBarcodeScanner = (
     startScanning,
     stopScanning,
     isScanning,
-    hasPermission,
     error
   };
 };

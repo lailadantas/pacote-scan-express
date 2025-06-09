@@ -1,7 +1,6 @@
 
 import { useEffect } from 'react';
 import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
-import { Camera, CameraOff } from 'lucide-react';
 
 interface BarcodeScannerProps {
   onCodeDetected: (code: string) => void;
@@ -9,7 +8,7 @@ interface BarcodeScannerProps {
 }
 
 const BarcodeScanner = ({ onCodeDetected, isActive }: BarcodeScannerProps) => {
-  const { startScanning, stopScanning, isScanning, hasPermission, error } = useBarcodeScanner(onCodeDetected);
+  const { startScanning, stopScanning, isScanning, error } = useBarcodeScanner(onCodeDetected);
 
   useEffect(() => {
     if (isActive && !isScanning) {
@@ -23,40 +22,11 @@ const BarcodeScanner = ({ onCodeDetected, isActive }: BarcodeScannerProps) => {
     };
   }, [isActive]);
 
-  const handleRequestPermission = () => {
-    startScanning();
-  };
-
-  if (hasPermission === null || hasPermission === false) {
+  if (error) {
     return (
       <div className="relative bg-black rounded-xl h-64 flex items-center justify-center overflow-hidden">
         <div className="text-center text-white p-4">
-          {hasPermission === false ? (
-            <>
-              <CameraOff className="w-12 h-12 mx-auto mb-4 text-red-400" />
-              <p className="mb-4">Acesso à câmera negado</p>
-              <button
-                onClick={handleRequestPermission}
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg"
-              >
-                Tentar novamente
-              </button>
-            </>
-          ) : (
-            <>
-              <Camera className="w-12 h-12 mx-auto mb-4" />
-              <p className="mb-4">Permissão necessária para acessar a câmera</p>
-              <button
-                onClick={handleRequestPermission}
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg"
-              >
-                Permitir acesso à câmera
-              </button>
-            </>
-          )}
-          {error && (
-            <p className="text-red-400 text-sm mt-2">{error}</p>
-          )}
+          <p className="text-red-400 text-sm">{error}</p>
         </div>
       </div>
     );
