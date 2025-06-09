@@ -120,12 +120,12 @@ const RotaEmAndamento = () => {
   );
 };
 
-const ServicoCard = ({ servico, status, onClick }) => {
+const ServicoCard = ({ servico, status, onClick }: { servico: any; status: any; onClick?: () => void }) => {
   const headerColor = status === 'finalizado' ? 'bg-green-500' : 'bg-blue-500';
   
   return (
     <div 
-      className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+      className={`bg-white rounded-xl shadow-sm overflow-hidden ${onClick ? 'cursor-pointer hover:shadow-md' : ''} transition-shadow`}
       onClick={onClick}
     >
       <div className={`${headerColor} text-white p-3 flex justify-between items-center`}>
