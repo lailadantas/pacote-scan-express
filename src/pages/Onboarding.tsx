@@ -96,6 +96,8 @@ const Onboarding = () => {
     navigate('/auth');
   };
 
+  const CurrentScene = onboardingData[currentStep].scene;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col">
       {/* Header */}
@@ -128,7 +130,7 @@ const Onboarding = () => {
           >
             {/* 3D Scene */}
             <div className="mb-8">
-              <onboardingData[currentStep].scene />
+              <CurrentScene />
             </div>
 
             {/* Text Content */}
