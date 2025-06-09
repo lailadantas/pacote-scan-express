@@ -17,6 +17,7 @@ export const useBarcodeScanner = (
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const controlsRef = useRef<any>(null);
+  const cooldownRef = useRef<boolean>(false);
 
   useEffect(() => {
     codeReader.current = new BrowserMultiFormatReader();
@@ -56,9 +57,15 @@ export const useBarcodeScanner = (
           videoElement.srcObject = stream;
           
           const controls = await codeReader.current.decodeFromVideoDevice(undefined, videoElement, (result, error) => {
-            if (result) {
+            if (result && !cooldownRef.current) {
               const code = result.getText();
+              cooldownRef.current = true;
               onDetected(code);
+              
+              // Ativa o cooldown por 3 segundos
+              setTimeout(() => {
+                cooldownRef.current = false;
+              }, 3000);
             }
             if (error && !(error.name === 'NotFoundException')) {
               console.error('Scanner error:', error);
@@ -84,6 +91,7 @@ export const useBarcodeScanner = (
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    cooldownRef.current = false;
     setIsScanning(false);
   };
 
