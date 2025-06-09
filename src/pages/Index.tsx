@@ -1,13 +1,73 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import MobileLayout from '@/components/MobileLayout';
+import { useNavigate } from 'react-router-dom';
+import { ScanLine, Tag, Settings, Download, Upload } from 'lucide-react';
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <MobileLayout title="Olá, {user_name}!">
+      <div className="p-4 space-y-4">
+        {/* Iniciar Bipagem - Card Principal */}
+        <button
+          onClick={() => navigate('/bipagem')}
+          className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <div className="flex items-center">
+            <div className="bg-white/20 p-3 rounded-xl mr-4">
+              <ScanLine className="w-6 h-6" />
+            </div>
+            <div className="text-left">
+              <h2 className="text-lg font-semibold">Iniciar bipagem</h2>
+            </div>
+          </div>
+        </button>
+
+        {/* Botões Secundários */}
+        <div className="grid grid-cols-2 gap-4">
+          <button className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
+            <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
+              <Tag className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <h3 className="font-medium text-sm">Ofertas</h3>
+              <h3 className="font-medium text-sm">disponíveis</h3>
+            </div>
+          </button>
+
+          <button className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
+            <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
+              <Settings className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <h3 className="font-medium text-sm">Meus</h3>
+              <h3 className="font-medium text-sm">serviços</h3>
+            </div>
+          </button>
+        </div>
+
+        {/* Seção Ações */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Ações</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <button className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
+              <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
+                <Download className="w-5 h-5" />
+              </div>
+              <h3 className="font-medium text-sm">Receber</h3>
+            </button>
+
+            <button className="bg-gradient-to-r from-orange-400 to-orange-500 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
+              <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
+                <Upload className="w-5 h-5" />
+              </div>
+              <h3 className="font-medium text-sm">Entregar</h3>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 
