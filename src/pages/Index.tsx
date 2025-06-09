@@ -36,7 +36,10 @@ const Index = () => {
             </div>
           </button>
 
-          <button className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
+          <button 
+            onClick={() => navigate('/meusservicos')}
+            className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all"
+          >
             <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
               <Settings className="w-5 h-5" />
             </div>

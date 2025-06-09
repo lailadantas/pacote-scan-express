@@ -1,21 +1,15 @@
 
-import MobileLayout from '@/components/MobileLayout';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Servicos = () => {
-  return (
-    <MobileLayout title="Serviços">
-      <div className="p-4">
-        <div className="bg-white rounded-xl p-6 shadow-sm text-center">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">
-            Serviços
-          </h2>
-          <p className="text-gray-600">
-            Esta seção será implementada em breve.
-          </p>
-        </div>
-      </div>
-    </MobileLayout>
-  );
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate('/meusservicos');
+  }, [navigate]);
+
+  return null;
 };
 
 export default Servicos;
