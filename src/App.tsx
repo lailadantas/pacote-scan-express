@@ -32,6 +32,7 @@ import DadosRemetente from "./pages/DadosRemetente";
 import ColetaSucesso from "./pages/ColetaSucesso";
 import NaoPudeColetar from "./pages/NaoPudeColetar";
 import MotivoColeta from "./pages/MotivoColeta";
+import AssinaturaColeta from "./pages/AssinaturaColeta";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/naopudeentregar/:id" element={<NaoPudeEntregar />} />
           <Route path="/motivoentrega/:id" element={<MotivoEntrega />} />
           <Route path="/coletar/:id" element={<Coletar />} />
+          <Route path="/assinatura-coleta/:id" element={<AssinaturaColeta />} />
           <Route path="/dadosremetente/:id" element={<DadosRemetente />} />
           <Route path="/coletasucesso" element={<ColetaSucesso />} />
           <Route path="/naopudecoletar/:id" element={<NaoPudeColetar />} />

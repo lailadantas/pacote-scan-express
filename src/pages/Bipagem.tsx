@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
 import PacotesBipados from '@/components/PacotesBipados';
 import { ScanLine } from 'lucide-react';
@@ -16,9 +15,15 @@ type ScanStatus = 'idle' | 'scanning' | 'loading' | 'success' | 'error';
 
 const Bipagem = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [scanStatus, setScanStatus] = useState<ScanStatus>('idle');
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScanning, setIsScanning] = useState(false);
+
+  // Detectar se está no contexto de coleta
+  const contexto = searchParams.get('contexto');
+  const pontoId = searchParams.get('pontoId');
+  const isColeta = contexto === 'coleta';
 
   const simulateScan = () => {
     if (isScanning) return;
@@ -73,13 +78,17 @@ const Bipagem = () => {
       return;
     }
     
-    toast({
-      title: "Bipagem finalizada!",
-      description: `${pacotes.length} pacotes enviados para o estoque`,
-    });
-    
-    // Aqui você enviaria os pacotes para a seção estoque
-    navigate('/estoque');
+    if (isColeta) {
+      // Se é coleta, vai para a tela de assinatura
+      navigate(`/assinatura-coleta/${pontoId}`);
+    } else {
+      // Se é estoque normal, vai para estoque
+      toast({
+        title: "Bipagem finalizada!",
+        description: `${pacotes.length} pacotes enviados para o estoque`,
+      });
+      navigate('/estoque');
+    }
   };
 
   const getStatusMessage = () => {
@@ -110,7 +119,7 @@ const Bipagem = () => {
 
   return (
     <MobileLayout 
-      title="Bipagem de itens" 
+      title={isColeta ? "Bipagem - Coleta" : "Bipagem de itens"} 
       showBackButton 
       showBottomNav={false}
     >
