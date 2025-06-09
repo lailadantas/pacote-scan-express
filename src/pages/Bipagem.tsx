@@ -19,10 +19,19 @@ const Bipagem = () => {
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
 
-  // Detectar se está no contexto de coleta
+  // Detectar contexto
   const contexto = searchParams.get('contexto');
   const pontoId = searchParams.get('pontoId');
   const isColeta = contexto === 'coleta';
+  const isReceber = contexto === 'receber';
+  const isTransferencia = contexto === 'transferencia';
+
+  const getTitulo = () => {
+    if (isColeta) return "Bipagem - Coleta";
+    if (isReceber) return "Bipagem - Receber";
+    if (isTransferencia) return "Bipagem - Transferência";
+    return "Bipagem de itens";
+  };
 
   const handleCodeDetected = (code: string) => {
     console.log('Código detectado:', code);
@@ -79,6 +88,18 @@ const Bipagem = () => {
     if (isColeta) {
       // Se é coleta, vai para a tela de assinatura
       navigate(`/assinatura-coleta/${pontoId}`);
+    } else if (isTransferencia) {
+      // Se é transferência, vai para tela de origem/destino
+      navigate('/dados-transferencia', { 
+        state: { pacotes } 
+      });
+    } else if (isReceber) {
+      // Se é receber, vai para estoque
+      toast({
+        title: "Recebimento finalizado!",
+        description: `${pacotes.length} pacotes recebidos no estoque`,
+      });
+      navigate('/estoque');
     } else {
       // Se é estoque normal, vai para estoque
       toast({
@@ -91,7 +112,7 @@ const Bipagem = () => {
 
   return (
     <MobileLayout 
-      title={isColeta ? "Bipagem - Coleta" : "Bipagem de itens"} 
+      title={getTitulo()} 
       showBackButton 
       showBottomNav={false}
     >

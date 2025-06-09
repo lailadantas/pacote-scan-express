@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +16,14 @@ const Index = () => {
       setUserName(userData.name || 'Usuário');
     }
   }, []);
+
+  const handleReceber = () => {
+    navigate('/bipagem?contexto=receber');
+  };
+
+  const handleEntregar = () => {
+    navigate('/bipagem?contexto=transferencia');
+  };
 
   return (
     <MobileLayout title={`Olá, ${userName}!`}>
@@ -64,18 +73,25 @@ const Index = () => {
         <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Ações</h2>
           <div className="grid grid-cols-2 gap-4">
-            <button className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
+            <button 
+              onClick={handleReceber}
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all"
+            >
               <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
                 <Download className="w-5 h-5" />
               </div>
               <h3 className="font-medium text-sm">Receber</h3>
             </button>
 
-            <button className="bg-gradient-to-r from-orange-400 to-orange-500 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
+            <button 
+              onClick={handleEntregar}
+              className="bg-gradient-to-r from-orange-400 to-orange-500 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all"
+            >
               <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
                 <Upload className="w-5 h-5" />
               </div>
               <h3 className="font-medium text-sm">Entregar</h3>
+              <h3 className="font-medium text-sm">transferência</h3>
             </button>
           </div>
         </div>

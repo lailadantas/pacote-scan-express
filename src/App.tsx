@@ -59,6 +59,9 @@ const App = () => (
           <Route path="/home" element={<Index />} />
           <Route path="/bipagem" element={<Bipagem />} />
           <Route path="/bipagem/digitar-codigo" element={<DigitarCodigo />} />
+          <Route path="/dados-transferencia" element={<DadosTransferencia />} />
+          <Route path="/upload-transferencia" element={<UploadTransferencia />} />
+          <Route path="/transferencia-sucesso" element={<TransferenciaSucesso />} />
           <Route path="/servicos" element={<Servicos />} />
           <Route path="/meusservicos" element={<MeusServicos />} />
           <Route path="/detalhedoservico/:id" element={<DetalheDoServico />} />
