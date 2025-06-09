@@ -18,13 +18,14 @@ export const useBarcodeScanner = (
   const [error, setError] = useState<string | null>(null);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const controlsRef = useRef<any>(null);
 
   useEffect(() => {
     codeReader.current = new BrowserMultiFormatReader();
     
     return () => {
-      if (codeReader.current) {
-        codeReader.current.reset();
+      if (controlsRef.current) {
+        controlsRef.current.stop();
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -57,7 +58,7 @@ export const useBarcodeScanner = (
         if (videoElement) {
           videoElement.srcObject = stream;
           
-          codeReader.current.decodeFromVideoDevice(undefined, videoElement, (result, error) => {
+          const controls = await codeReader.current.decodeFromVideoDevice(undefined, videoElement, (result, error) => {
             if (result) {
               const code = result.getText();
               onDetected(code);
@@ -66,6 +67,8 @@ export const useBarcodeScanner = (
               console.error('Scanner error:', error);
             }
           });
+          
+          controlsRef.current = controls;
         }
       }
     } catch (err: any) {
@@ -77,8 +80,9 @@ export const useBarcodeScanner = (
   };
 
   const stopScanning = (): void => {
-    if (codeReader.current) {
-      codeReader.current.reset();
+    if (controlsRef.current) {
+      controlsRef.current.stop();
+      controlsRef.current = null;
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
