@@ -5,18 +5,13 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
-    phone: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
   const navigate = useNavigate();
 
@@ -27,27 +22,15 @@ const Auth = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isLogin) {
-      // Para login, verifica se existe usuário salvo
-      const savedUser = localStorage.getItem('userData');
-      if (savedUser) {
-        const userData = JSON.parse(savedUser);
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        navigate('/home');
-      } else {
-        // Se não existe usuário, cria um com dados básicos
-        const userData = { name: 'Usuário', email: formData.email };
-        localStorage.setItem('userData', JSON.stringify(userData));
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        navigate('/home');
-      }
+    // Para login, verifica se existe usuário salvo
+    const savedUser = localStorage.getItem('userData');
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      navigate('/home');
     } else {
-      // Para cadastro, salva os dados do usuário
-      const userData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone
-      };
+      // Se não existe usuário, cria um com dados básicos
+      const userData = { name: 'Usuário', email: formData.email };
       localStorage.setItem('userData', JSON.stringify(userData));
       localStorage.setItem('currentUser', JSON.stringify(userData));
       navigate('/home');
@@ -76,77 +59,11 @@ const Auth = () => {
             <span className="text-2xl">📦</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">ExpediApp</h1>
-          <p className="text-gray-600">
-            {isLogin ? 'Entre na sua conta' : 'Crie sua conta'}
-          </p>
-        </div>
-
-        {/* Toggle Login/Register */}
-        <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              isLogin
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Entrar
-          </button>
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              !isLogin
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Cadastrar
-          </button>
+          <p className="text-gray-600">Entre na sua conta</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="space-y-4"
-            >
-              <div>
-                <Label htmlFor="name">Nome completo</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Seu nome completo"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="phone">Telefone</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="(11) 99999-9999"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
-
           <div>
             <Label htmlFor="email">E-mail</Label>
             <div className="relative">
@@ -186,55 +103,25 @@ const Auth = () => {
             </div>
           </div>
 
-          {!isLogin && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+          <div className="text-right">
+            <button
+              type="button"
+              className="text-sm text-purple-600 hover:text-purple-700"
             >
-              <Label htmlFor="confirmPassword">Confirmar senha</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                <Input
-                  id="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Confirme sua senha"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {isLogin && (
-            <div className="text-right">
-              <button
-                type="button"
-                className="text-sm text-purple-600 hover:text-purple-700"
-              >
-                Esqueceu a senha?
-              </button>
-            </div>
-          )}
+              Esqueceu a senha?
+            </button>
+          </div>
 
           <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
-            {isLogin ? 'Entrar' : 'Criar conta'}
+            Entrar
           </Button>
         </form>
-
-        {/* Divider */}
-        <div className="flex items-center my-6">
-          <Separator className="flex-1" />
-          <span className="px-4 text-sm text-gray-500">ou</span>
-          <Separator className="flex-1" />
-        </div>
 
         {/* Google Login */}
         <Button
           onClick={handleGoogleLogin}
           variant="outline"
-          className="w-full flex items-center justify-center space-x-2"
+          className="w-full flex items-center justify-center space-x-2 mt-4"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -257,19 +144,16 @@ const Auth = () => {
           <span>Continuar com Google</span>
         </Button>
 
-        {/* Terms */}
-        {!isLogin && (
-          <p className="text-xs text-gray-500 text-center mt-4">
-            Ao criar uma conta, você aceita nossos{' '}
-            <button className="text-purple-600 hover:underline">
-              Termos de Uso
-            </button>{' '}
-            e{' '}
-            <button className="text-purple-600 hover:underline">
-              Política de Privacidade
-            </button>
-          </p>
-        )}
+        {/* Cadastro Link */}
+        <p className="text-center text-sm text-gray-600 mt-6">
+          Não possui cadastro?{' '}
+          <button
+            onClick={() => navigate('/tipodeusuario')}
+            className="text-purple-600 hover:text-purple-700 font-medium hover:underline"
+          >
+            Cadastre-se aqui
+          </button>
+        </p>
       </motion.div>
     </div>
   );
