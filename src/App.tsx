@@ -9,6 +9,10 @@ import Bipagem from "./pages/Bipagem";
 import DigitarCodigo from "./pages/DigitarCodigo";
 import Servicos from "./pages/Servicos";
 import Estoque from "./pages/Estoque";
+import PacotesComigo from "./pages/PacotesComigo";
+import PacotesProblema from "./pages/PacotesProblema";
+import PacotesRota from "./pages/PacotesRota";
+import DetalhePacote from "./pages/DetalhePacote";
 import Chat from "./pages/Chat";
 import Financeiro from "./pages/Financeiro";
 import NotFound from "./pages/NotFound";
@@ -49,6 +53,10 @@ const App = () => (
           <Route path="/registrosucesso" element={<RegistroSucesso />} />
           <Route path="/rotafinalizada" element={<RotaFinalizada />} />
           <Route path="/estoque" element={<Estoque />} />
+          <Route path="/estoque/pacotes-comigo" element={<PacotesComigo />} />
+          <Route path="/estoque/pacotes-problema" element={<PacotesProblema />} />
+          <Route path="/estoque/pacotes-rota" element={<PacotesRota />} />
+          <Route path="/estoque/detalhes/:id" element={<DetalhePacote />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="*" element={<NotFound />} />
