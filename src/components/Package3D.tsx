@@ -1,7 +1,6 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Box } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface Package3DProps {
@@ -24,9 +23,10 @@ const Package3D = ({ position, scale = 1, color = '#8B5CF6', animated = true }: 
 
   return (
     <group position={position}>
-      <Box ref={meshRef} args={[scale, scale, scale]} castShadow receiveShadow>
+      <mesh ref={meshRef} castShadow receiveShadow>
+        <boxGeometry args={[scale, scale, scale]} />
         <meshStandardMaterial color={color} />
-      </Box>
+      </mesh>
     </group>
   );
 };
