@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
 import { Filter, ArrowUpDown, ChevronRight } from 'lucide-react';
@@ -12,19 +12,18 @@ const PacotesComigo = () => {
   const navigate = useNavigate();
   const [filtroAberto, setFiltroAberto] = useState(false);
   const [ordenacaoAberta, setOrdenacaoAberta] = useState(false);
+  const [pacotes, setPacotes] = useState<any[]>([]);
   const [filtros, setFiltros] = useState({
     codigo: '',
     status: ''
   });
   const [ordenacao, setOrdenacao] = useState('codigo-crescente');
 
-  const pacotes = [
-    { id: 1, codigo: 'PKG001', status: 'Aguardando', dataRecebimento: '2024-01-15' },
-    { id: 2, codigo: 'PKG002', status: 'Aguardando', dataRecebimento: '2024-01-16' },
-    { id: 3, codigo: 'PKG003', status: 'Aguardando', dataRecebimento: '2024-01-17' },
-    { id: 4, codigo: 'PKG004', status: 'Aguardando', dataRecebimento: '2024-01-18' },
-    { id: 5, codigo: 'PKG005', status: 'Aguardando', dataRecebimento: '2024-01-19' }
-  ];
+  useEffect(() => {
+    // Carrega os pacotes do localStorage
+    const userStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+    setPacotes(userStock);
+  }, []);
 
   const aplicarFiltros = () => {
     setFiltroAberto(false);
@@ -66,7 +65,7 @@ const PacotesComigo = () => {
                         <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="aguardando">Aguardando</SelectItem>
+                        <SelectItem value="bipado">Bipado</SelectItem>
                         <SelectItem value="processando">Processando</SelectItem>
                       </SelectContent>
                     </Select>
@@ -111,25 +110,32 @@ const PacotesComigo = () => {
 
         {/* Lista de pacotes */}
         <div className="flex-1 p-4 space-y-3">
-          {pacotes.map((pacote) => (
-            <button
-              key={pacote.id}
-              onClick={() => navigate(`/estoque/detalhes/${pacote.id}`)}
-              className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-medium text-gray-900">{pacote.codigo}</span>
-                    <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                      {pacote.status}
-                    </span>
+          {pacotes.length === 0 ? (
+            <div className="text-center py-8">
+              <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">Nenhum pacote encontrado</p>
+            </div>
+          ) : (
+            pacotes.map((pacote) => (
+              <button
+                key={pacote.id}
+                onClick={() => navigate(`/estoque/detalhes/${pacote.id}`)}
+                className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-medium text-gray-900">{pacote.codigo}</span>
+                      <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                        {pacote.status || 'Bipado'}
+                      </span>
+                    </div>
                   </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400 ml-3" />
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 ml-3" />
-              </div>
-            </button>
-          ))}
+              </button>
+            ))
+          )}
         </div>
       </div>
     </MobileLayout>

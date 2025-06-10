@@ -1,15 +1,23 @@
 
+import { useEffect, useState } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
 import { Package, AlertTriangle, Truck, ChevronRight } from 'lucide-react';
 
 const Estoque = () => {
   const navigate = useNavigate();
+  const [pacotesComigo, setPacotesComigo] = useState(0);
+
+  useEffect(() => {
+    // Carrega a quantidade de pacotes do localStorage
+    const userStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+    setPacotesComigo(userStock.length);
+  }, []);
 
   const estoqueData = [
     {
       title: "Pacotes comigo",
-      count: 15,
+      count: pacotesComigo,
       icon: Package,
       path: "/estoque/pacotes-comigo",
       color: "text-blue-600"

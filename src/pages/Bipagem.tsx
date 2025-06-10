@@ -44,7 +44,7 @@ const Bipagem = () => {
   const handleCodeDetected = (code: string) => {
     console.log('Código detectado:', code);
     
-    // Verifica se o código já foi bipado
+    // Verifica se o código já foi bipado na lista atual
     const existingPacote = pacotes.find(p => p.codigo === code);
     if (existingPacote) {
       navigate('/resultado-bipagem', { 
@@ -119,14 +119,22 @@ const Bipagem = () => {
         state: { pacotes } 
       });
     } else if (isReceber) {
-      // Se é receber, vai para estoque
+      // Se é receber, adiciona ao estoque local
+      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+      const updatedStock = [...existingStock, ...pacotes];
+      localStorage.setItem('userStock', JSON.stringify(updatedStock));
+      
       toast({
         title: "Recebimento finalizado!",
         description: `${pacotes.length} pacotes recebidos no estoque`,
       });
       navigate('/estoque');
     } else {
-      // Se é estoque normal, vai para estoque
+      // Se é estoque normal, adiciona ao estoque local
+      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+      const updatedStock = [...existingStock, ...pacotes];
+      localStorage.setItem('userStock', JSON.stringify(updatedStock));
+      
       toast({
         title: "Bipagem finalizada!",
         description: `${pacotes.length} pacotes enviados para o estoque`,

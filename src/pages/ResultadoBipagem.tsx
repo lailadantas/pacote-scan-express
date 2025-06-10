@@ -35,13 +35,13 @@ const ResultadoBipagem = () => {
   const getBackgroundColor = () => {
     switch (resultado) {
       case 'sucesso':
-        return 'bg-green-50';
+        return 'bg-green-100';
       case 'pendencia':
-        return 'bg-yellow-50';
+        return 'bg-yellow-100';
       case 'erro':
-        return 'bg-red-50';
+        return 'bg-red-100';
       default:
-        return 'bg-green-50';
+        return 'bg-green-100';
     }
   };
 
@@ -83,13 +83,9 @@ const ResultadoBipagem = () => {
           {message.title}
         </h2>
         
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600">
           {message.description}
         </p>
-        
-        <div className="text-sm text-gray-500">
-          Retornando em 3 segundos...
-        </div>
       </div>
     </div>
   );

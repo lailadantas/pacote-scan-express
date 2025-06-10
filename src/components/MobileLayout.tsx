@@ -28,6 +28,8 @@ const MobileLayout = ({
       navigate('/meusservicos');
     } else if (location.pathname === '/meusservicos') {
       navigate('/home');
+    } else if (location.pathname === '/bipagem') {
+      navigate('/home');
     } else {
       navigate(-1);
     }
@@ -40,7 +42,7 @@ const MobileLayout = ({
   };
 
   const navItems = [
-    { icon: Home, label: 'Home', path: '/', active: location.pathname === '/' },
+    { icon: Home, label: 'Home', path: '/home', active: location.pathname === '/home' || location.pathname === '/' },
     { icon: MapPin, label: 'Serviços', path: '/servicos', active: location.pathname === '/servicos' },
     { icon: Package, label: 'Estoque', path: '/estoque', active: location.pathname === '/estoque' },
     { icon: MessageCircle, label: 'Chat', path: '/chat', active: location.pathname === '/chat' },
