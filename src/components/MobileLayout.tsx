@@ -10,6 +10,7 @@ interface MobileLayoutProps {
   showBackButton?: boolean;
   showBottomNav?: boolean;
   showProfileMenu?: boolean;
+  onBackClick?: () => void;
 }
 
 const MobileLayout = ({ 
@@ -17,12 +18,18 @@ const MobileLayout = ({
   title, 
   showBackButton = false, 
   showBottomNav = true,
-  showProfileMenu = false
+  showProfileMenu = false,
+  onBackClick
 }: MobileLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleBackNavigation = () => {
+    if (onBackClick) {
+      onBackClick();
+      return;
+    }
+
     // Navegação customizada baseada na tela atual
     if (location.pathname.includes('/detalhedoservico/')) {
       navigate('/meusservicos');

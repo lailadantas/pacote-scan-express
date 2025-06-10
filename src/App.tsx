@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import Bipagem from "./pages/Bipagem";
 import DigitarCodigo from "./pages/DigitarCodigo";
 import ResultadoBipagem from "./pages/ResultadoBipagem";
+import EscolherTipo from "./pages/EscolherTipo";
 import DadosTransferencia from "./pages/DadosTransferencia";
 import UploadTransferencia from "./pages/UploadTransferencia";
 import TransferenciaSucesso from "./pages/TransferenciaSucesso";
