@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
-import { Filter, ArrowUpDown, ChevronRight } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronRight, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
