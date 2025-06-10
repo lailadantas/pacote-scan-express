@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { User, Mail, Phone, Eye, EyeOff, Building, CreditCard } from 'lucide-react';
+import { User, Mail, Phone, Eye, EyeOff } from 'lucide-react';
 
 const UsuarioTipoPonto = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -53,17 +53,94 @@ const UsuarioTipoPonto = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
+  // Função para máscara de CPF
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+    return value;
+  };
+
+  // Função para máscara de hora
+  const formatHora = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 4) {
+      return numbers.replace(/(\d{2})(\d{2})/, '$1:$2');
+    }
+    return value;
+  };
+
+  // Função para máscara de CEP
+  const formatCEP = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 8) {
+      return numbers.replace(/(\d{5})(\d{3})/, '$1-$2');
+    }
+    return value;
+  };
+
+  // Função para buscar CEP
+  const buscarCEP = async (cep: string) => {
+    const cepNumbers = cep.replace(/\D/g, '');
+    if (cepNumbers.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cepNumbers}/json/`);
+        const data = await response.json();
+        
+        if (!data.erro) {
+          setFormData(prev => ({
+            ...prev,
+            estado: data.uf || '',
+            cidade: data.localidade || '',
+            bairro: data.bairro || '',
+            logradouro: data.logradouro || ''
+          }));
+        }
+      } catch (error) {
+        console.log('Erro ao buscar CEP:', error);
+      }
+    }
+  };
+
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'cpf' && typeof value === 'string') {
+      const formatted = formatCPF(value);
+      setFormData(prev => ({ ...prev, [field]: formatted }));
+    } else if (field === 'horaLimiteColeta' && typeof value === 'string') {
+      const formatted = formatHora(value);
+      setFormData(prev => ({ ...prev, [field]: formatted }));
+    } else if (field === 'cep' && typeof value === 'string') {
+      const formatted = formatCEP(value);
+      setFormData(prev => ({ ...prev, [field]: formatted }));
+      if (formatted.length === 9) {
+        buscarCEP(formatted);
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleNext = () => {
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Salva os dados e vai para tela de sucesso
-      localStorage.setItem('userData', JSON.stringify(formData));
-      localStorage.setItem('currentUser', JSON.stringify({ name: formData.nome, email: formData.email }));
+      // Salva os dados completos do usuário
+      const userData = {
+        ...formData,
+        tipoUsuario: 'Entregador',
+        endereco: `${formData.logradouro}, ${formData.numero} - ${formData.bairro}, ${formData.cidade}/${formData.estado}`
+      };
+      
+      localStorage.setItem('userData', JSON.stringify(userData));
+      localStorage.setItem('currentUser', JSON.stringify({
+        name: formData.nome,
+        email: formData.email,
+        phone: formData.celular,
+        tipoUsuario: 'Entregador',
+        endereco: `${formData.logradouro}, ${formData.numero} - ${formData.bairro}, ${formData.cidade}/${formData.estado}`
+      }));
+      
       navigate('/cadastrosucesso');
     }
   };
@@ -303,16 +380,18 @@ const UsuarioTipoPonto = () => {
 
             {formData.tipoPessoa === 'fisica' && (
               <Input
-                placeholder="CPF"
+                placeholder="000.000.000-00"
                 value={formData.cpf}
                 onChange={(e) => handleInputChange('cpf', e.target.value)}
+                maxLength={14}
               />
             )}
 
             <Input
-              placeholder="Hora limite de coleta"
+              placeholder="00:00"
               value={formData.horaLimiteColeta}
               onChange={(e) => handleInputChange('horaLimiteColeta', e.target.value)}
+              maxLength={5}
             />
           </div>
         );
@@ -321,9 +400,10 @@ const UsuarioTipoPonto = () => {
         return (
           <div className="space-y-4">
             <Input
-              placeholder="CEP"
+              placeholder="00000-000"
               value={formData.cep}
               onChange={(e) => handleInputChange('cep', e.target.value)}
+              maxLength={9}
             />
             <Input
               placeholder="Estado"

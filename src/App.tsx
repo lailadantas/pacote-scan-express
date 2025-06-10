@@ -66,6 +66,7 @@ const App = () => (
           <Route path="/home" element={<Index />} />
           <Route path="/home2" element={<Home2 />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/escolhertipo" element={<EscolherTipo />} />
           <Route path="/bipagem" element={<Bipagem />} />
           <Route path="/bipagem/digitar-codigo" element={<DigitarCodigo />} />
           <Route path="/resultado-bipagem" element={<ResultadoBipagem />} />

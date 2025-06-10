@@ -114,32 +114,20 @@ const Bipagem = () => {
       // Se é coleta, vai para a tela de assinatura
       navigate(`/assinatura-coleta/${pontoId}`);
     } else if (isTransferencia) {
-      // Se é transferência, vai para tela de origem/destino
-      navigate('/dados-transferencia', { 
+      // Se é transferência, remove do estoque e vai para EscolherTipo
+      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+      const pacoteIds = pacotes.map(p => p.id);
+      const updatedStock = existingStock.filter(item => !pacoteIds.includes(item.id));
+      localStorage.setItem('userStock', JSON.stringify(updatedStock));
+      
+      navigate('/escolhertipo', { 
         state: { pacotes } 
       });
-    } else if (isReceber) {
-      // Se é receber, adiciona ao estoque local
-      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
-      const updatedStock = [...existingStock, ...pacotes];
-      localStorage.setItem('userStock', JSON.stringify(updatedStock));
-      
-      toast({
-        title: "Recebimento finalizado!",
-        description: `${pacotes.length} pacotes recebidos no estoque`,
-      });
-      navigate('/estoque');
     } else {
-      // Se é estoque normal, adiciona ao estoque local
-      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
-      const updatedStock = [...existingStock, ...pacotes];
-      localStorage.setItem('userStock', JSON.stringify(updatedStock));
-      
-      toast({
-        title: "Bipagem finalizada!",
-        description: `${pacotes.length} pacotes enviados para o estoque`,
+      // Para outros contextos, vai para EscolherTipo
+      navigate('/escolhertipo', { 
+        state: { pacotes } 
       });
-      navigate('/estoque');
     }
   };
 
@@ -148,6 +136,7 @@ const Bipagem = () => {
       title={getTitulo()} 
       showBackButton 
       showBottomNav={false}
+      onBackClick={() => navigate('/home')}
     >
       <div className="flex flex-col h-full relative">
         {/* Área de Bipagem */}
