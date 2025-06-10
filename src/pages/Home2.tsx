@@ -48,7 +48,7 @@ const Home2 = () => {
   ];
 
   return (
-    <MobileLayout title="Início" showBottomNav={false}>
+    <MobileLayout title="Início" showBottomNav={false} showProfileMenu={true}>
       <div className="bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 min-h-screen">
         {/* Header */}
         <div className="p-4 pb-6">

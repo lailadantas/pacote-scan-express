@@ -8,8 +8,14 @@ const Splash = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/onboarding');
-    }, 3000); // 3 segundos de animação
+      // Verificar se o usuário já está logado
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+      if (isLoggedIn === 'true') {
+        navigate('/home');
+      } else {
+        navigate('/onboarding');
+      }
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
@@ -17,44 +23,36 @@ const Splash = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500 flex items-center justify-center">
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
+        initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
         className="text-center"
       >
         <motion.div
-          initial={{ rotate: 0 }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          initial={{ y: -50 }}
+          animate={{ y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
           className="w-32 h-32 mx-auto mb-8 bg-white rounded-3xl flex items-center justify-center shadow-2xl"
         >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="text-4xl font-bold text-purple-600"
-          >
-            📦
-          </motion.div>
+          <span className="text-6xl">📦</span>
         </motion.div>
         
         <motion.h1
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1, duration: 0.8 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
           className="text-4xl font-bold text-white mb-4"
         >
           ExpediApp
         </motion.h1>
         
         <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.3, duration: 0.8 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9, duration: 0.6 }}
           className="text-xl text-white/90"
         >
-          Gestão inteligente de expedição
+          Gestão inteligente de entregas
         </motion.p>
       </motion.div>
     </div>

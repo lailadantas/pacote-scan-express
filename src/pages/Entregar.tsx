@@ -1,47 +1,75 @@
 
+import { useState } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Entregar = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [selectedOption, setSelectedOption] = useState('');
+
+  const destinatarioNome = "Maria Silva Santos";
 
   const opcoes = [
-    "Maria Silva Santos",
-    "Familiar/amigo", 
-    "Vizinho",
-    "Recepcionista/Portaria",
-    "Outro"
+    { id: 'destinatario', label: destinatarioNome },
+    { id: 'responsavel', label: 'Responsável pelo local' },
+    { id: 'porteiro', label: 'Porteiro' },
+    { id: 'vizinho', label: 'Vizinho' },
+    { id: 'outros', label: 'Outros' }
   ];
 
-  const handleOpcaoClick = (opcao: string) => {
-    navigate(`/dadosrecebedor/${id}`, { state: { tipoRecebedor: opcao } });
+  const handleContinuar = () => {
+    const tipoRecebedor = opcoes.find(op => op.id === selectedOption)?.label || '';
+    navigate(`/dadosrecebedor/${id}`, { 
+      state: { 
+        tipoRecebedor,
+        nomePreenchido: selectedOption === 'destinatario' ? destinatarioNome : ''
+      } 
+    });
   };
 
   return (
     <MobileLayout title="Entregar" showBackButton>
-      <div className="p-4">
-        <h2 className="text-lg font-semibold text-gray-800 mb-6">
+      <div className="p-4 space-y-6">
+        <h2 className="text-lg font-semibold text-gray-800">
           Quem recebeu a entrega?
         </h2>
-        
+
         <div className="space-y-3">
-          {opcoes.map((opcao, index) => (
+          {opcoes.map((opcao) => (
             <button
-              key={index}
-              onClick={() => handleOpcaoClick(opcao)}
-              className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left border border-gray-100 hover:border-purple-200"
+              key={opcao.id}
+              onClick={() => setSelectedOption(opcao.id)}
+              className={`w-full p-4 text-left rounded-xl border-2 transition-colors ${
+                selectedOption === opcao.id
+                  ? 'border-purple-500 bg-purple-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-800">{opcao}</span>
-                <div className="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-transparent" />
+              <div className="flex items-center">
+                <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                  selectedOption === opcao.id
+                    ? 'border-purple-500 bg-purple-500'
+                    : 'border-gray-300'
+                }`}>
+                  {selectedOption === opcao.id && (
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  )}
                 </div>
+                <span className="font-medium text-gray-800">{opcao.label}</span>
               </div>
             </button>
           ))}
         </div>
+
+        <Button 
+          onClick={handleContinuar}
+          disabled={!selectedOption}
+          className="w-full"
+        >
+          Continuar
+        </Button>
       </div>
     </MobileLayout>
   );

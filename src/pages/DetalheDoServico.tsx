@@ -129,9 +129,6 @@ const DetalheDoServico = () => {
                     <Clock className="w-4 h-4" />
                     <span className="text-sm">{servico.horario}</span>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Vou para lá
-                  </Button>
                 </div>
               </div>
             </div>

@@ -26,7 +26,7 @@ const Index = () => {
   };
 
   return (
-    <MobileLayout title={`Olá, ${userName}!`}>
+    <MobileLayout title={`Olá, ${userName}!`} showProfileMenu={true}>
       <div className="p-4 space-y-4">
         {/* Iniciar Bipagem - Card Principal */}
         <button

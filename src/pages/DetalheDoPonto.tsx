@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 const DetalheDoPonto = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [foiParaLa, setFoiParaLa] = useState(false);
 
   // Determinar tipo de serviço baseado no ID (IDs pares = coleta, ímpares = entrega)
   const isColeta = id ? parseInt(id) % 2 === 0 : false;
@@ -29,10 +28,6 @@ const DetalheDoPonto = () => {
       complemento: "Apartamento 45, Bloco B"
     },
     canalVendas: "Mercado Livre"
-  };
-
-  const handleVouParaLa = () => {
-    setFoiParaLa(true);
   };
 
   const abrirMapa = () => {
@@ -102,29 +97,21 @@ const DetalheDoPonto = () => {
           </p>
         </div>
 
-        {/* Botões de ação */}
+        {/* Botões de ação - Sempre mostrar os botões principais */}
         <div className="space-y-3">
-          {!foiParaLa ? (
-            <Button onClick={handleVouParaLa} className="w-full">
-              Vou para lá
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <Button 
-                onClick={() => navigate(isColeta ? `/coletar/${id}` : `/entregar/${id}`)}
-                className="w-full"
-              >
-                {isColeta ? 'Coletar' : 'Entregar'}
-              </Button>
-              <Button 
-                onClick={() => navigate(isColeta ? `/naopudecoletar/${id}` : `/naopudeentregar/${id}`)}
-                variant="outline" 
-                className="w-full"
-              >
-                {isColeta ? 'Não pude coletar' : 'Não pude entregar'}
-              </Button>
-            </div>
-          )}
+          <Button 
+            onClick={() => navigate(isColeta ? `/coletar/${id}` : `/entregar/${id}`)}
+            className="w-full"
+          >
+            {isColeta ? 'Coletar' : 'Entregar'}
+          </Button>
+          <Button 
+            onClick={() => navigate(isColeta ? `/naopudecoletar/${id}` : `/naopudeentregar/${id}`)}
+            variant="outline" 
+            className="w-full"
+          >
+            {isColeta ? 'Não pude coletar' : 'Não pude entregar'}
+          </Button>
         </div>
       </div>
     </MobileLayout>

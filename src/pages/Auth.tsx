@@ -5,10 +5,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -19,31 +20,58 @@ const Auth = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    
+    // Simular loading
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Para login, verifica se existe usuário salvo
     const savedUser = localStorage.getItem('userData');
     if (savedUser) {
       const userData = JSON.parse(savedUser);
       localStorage.setItem('currentUser', JSON.stringify(userData));
+      localStorage.setItem('isLoggedIn', 'true');
       navigate('/home');
     } else {
       // Se não existe usuário, cria um com dados básicos
       const userData = { name: 'Usuário', email: formData.email };
       localStorage.setItem('userData', JSON.stringify(userData));
       localStorage.setItem('currentUser', JSON.stringify(userData));
+      localStorage.setItem('isLoggedIn', 'true');
       navigate('/home');
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    
+    // Simular loading
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     // Simular login com Google
     const userData = { name: 'Usuário Google', email: 'usuario@google.com' };
     localStorage.setItem('userData', JSON.stringify(userData));
     localStorage.setItem('currentUser', JSON.stringify(userData));
+    localStorage.setItem('isLoggedIn', 'true');
     navigate('/home');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center text-white"
+        >
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
+          <p className="text-lg">Entrando...</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500 flex items-center justify-center p-4">

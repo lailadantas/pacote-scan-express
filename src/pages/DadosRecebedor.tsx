@@ -1,8 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Upload, Camera, PenTool } from 'lucide-react';
+import { Upload, Camera, PenTool, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,26 +12,32 @@ const DadosRecebedor = () => {
   const { id } = useParams();
   const location = useLocation();
   const tipoRecebedor = location.state?.tipoRecebedor || '';
+  const nomePreenchido = location.state?.nomePreenchido || '';
+
+  const assinaturaInputRef = useRef<HTMLInputElement>(null);
+  const fotoInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    nome: '',
+    nome: nomePreenchido,
     tipoDocumento: 'RG',
     numeroDocumento: '',
-    assinatura: null,
-    fotoLocal: null
+    assinatura: null as File | null,
+    fotoLocal: null as File | null
   });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = (field: string) => {
-    // Simular upload de arquivo
-    setFormData(prev => ({ ...prev, [field]: 'arquivo_simulado.jpg' }));
+  const handleFileUpload = (field: 'assinatura' | 'fotoLocal', file: File) => {
+    setFormData(prev => ({ ...prev, [field]: file }));
+  };
+
+  const handleRemoveFile = (field: 'assinatura' | 'fotoLocal') => {
+    setFormData(prev => ({ ...prev, [field]: null }));
   };
 
   const handleSubmit = () => {
-    // Validar se todos os campos estão preenchidos
     if (formData.nome && formData.numeroDocumento && formData.assinatura && formData.fotoLocal) {
       navigate('/entregasucesso');
     }
@@ -90,43 +96,129 @@ const DadosRecebedor = () => {
           {/* Upload de assinatura */}
           <div>
             <Label>Assinatura</Label>
-            <button
-              onClick={() => handleFileUpload('assinatura')}
-              className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-purple-400 transition-colors"
-            >
-              {formData.assinatura ? (
-                <div className="text-center">
-                  <PenTool className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-sm text-green-600">Assinatura coletada</p>
+            {formData.assinatura ? (
+              <div className="space-y-2">
+                <div className="relative">
+                  <img 
+                    src={URL.createObjectURL(formData.assinatura)} 
+                    alt="Assinatura" 
+                    className="w-full h-24 object-cover rounded-lg border"
+                  />
+                  <button
+                    onClick={() => handleRemoveFile('assinatura')}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              ) : (
-                <div className="text-center">
-                  <PenTool className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Toque para coletar assinatura</p>
-                </div>
-              )}
-            </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => assinaturaInputRef.current?.click()}
+                  className="h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-purple-400 transition-colors"
+                >
+                  <Upload className="w-6 h-6 text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-500">Upload</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                      navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(stream => {
+                          // Simular captura de foto
+                          const canvas = document.createElement('canvas');
+                          canvas.toBlob((blob) => {
+                            if (blob) {
+                              const file = new File([blob], 'assinatura.jpg', { type: 'image/jpeg' });
+                              handleFileUpload('assinatura', file);
+                            }
+                          });
+                          stream.getTracks().forEach(track => track.stop());
+                        });
+                    }
+                  }}
+                  className="h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-purple-400 transition-colors"
+                >
+                  <Camera className="w-6 h-6 text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-500">Câmera</span>
+                </button>
+              </div>
+            )}
+            <input
+              ref={assinaturaInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileUpload('assinatura', file);
+              }}
+            />
           </div>
 
           {/* Upload de foto */}
           <div>
             <Label>Foto do local</Label>
-            <button
-              onClick={() => handleFileUpload('fotoLocal')}
-              className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-purple-400 transition-colors"
-            >
-              {formData.fotoLocal ? (
-                <div className="text-center">
-                  <Camera className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-sm text-green-600">Foto adicionada</p>
+            {formData.fotoLocal ? (
+              <div className="space-y-2">
+                <div className="relative">
+                  <img 
+                    src={URL.createObjectURL(formData.fotoLocal)} 
+                    alt="Foto do local" 
+                    className="w-full h-24 object-cover rounded-lg border"
+                  />
+                  <button
+                    onClick={() => handleRemoveFile('fotoLocal')}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              ) : (
-                <div className="text-center">
-                  <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Toque para adicionar foto</p>
-                </div>
-              )}
-            </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => fotoInputRef.current?.click()}
+                  className="h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-purple-400 transition-colors"
+                >
+                  <Upload className="w-6 h-6 text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-500">Upload</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                      navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(stream => {
+                          // Simular captura de foto
+                          const canvas = document.createElement('canvas');
+                          canvas.toBlob((blob) => {
+                            if (blob) {
+                              const file = new File([blob], 'foto-local.jpg', { type: 'image/jpeg' });
+                              handleFileUpload('fotoLocal', file);
+                            }
+                          });
+                          stream.getTracks().forEach(track => track.stop());
+                        });
+                    }
+                  }}
+                  className="h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-purple-400 transition-colors"
+                >
+                  <Camera className="w-6 h-6 text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-500">Câmera</span>
+                </button>
+              </div>
+            )}
+            <input
+              ref={fotoInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileUpload('fotoLocal', file);
+              }}
+            />
           </div>
         </div>
 
