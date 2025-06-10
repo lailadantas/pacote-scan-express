@@ -1,12 +1,13 @@
 
 import { useState } from 'react';
-import { Package, ChevronUp, ChevronDown, Check, AlertTriangle, Trash2 } from 'lucide-react';
+import { Package, ChevronUp, ChevronDown, Check, Trash2, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface Pacote {
   id: string;
   codigo: string;
-  status: 'bipado' | 'pendencia';
+  status: 'bipado';
 }
 
 interface PacotesBipadosProps {
@@ -16,9 +17,16 @@ interface PacotesBipadosProps {
 
 const PacotesBipados = ({ pacotes, onRemovePacote }: PacotesBipadosProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
+
+  const handlePacoteClick = (pacoteId: string) => {
+    navigate(`/estoque/detalhes/${pacoteId}`);
+  };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl">
+    <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl" style={{
+      boxShadow: '0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -10px 10px -5px rgba(0, 0, 0, 0.04)'
+    }}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -59,6 +67,7 @@ const PacotesBipados = ({ pacotes, onRemovePacote }: PacotesBipadosProps) => {
               <div className="flex text-xs font-medium text-gray-500 pb-2 border-b">
                 <span className="flex-1">Código do pacote</span>
                 <span className="w-20 text-center">Status</span>
+                <span className="w-16"></span>
                 <span className="w-10"></span>
               </div>
               {pacotes.map((pacote) => (
@@ -67,16 +76,16 @@ const PacotesBipados = ({ pacotes, onRemovePacote }: PacotesBipadosProps) => {
                     {pacote.codigo}
                   </span>
                   <div className="w-20 flex justify-center">
-                    {pacote.status === 'bipado' ? (
-                      <div className="bg-green-100 p-1 rounded">
-                        <Check className="w-4 h-4 text-green-600" />
-                      </div>
-                    ) : (
-                      <div className="bg-yellow-100 p-1 rounded">
-                        <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                      </div>
-                    )}
+                    <div className="bg-green-100 p-1 rounded">
+                      <Check className="w-4 h-4 text-green-600" />
+                    </div>
                   </div>
+                  <button
+                    onClick={() => handlePacoteClick(pacote.id)}
+                    className="w-16 flex justify-center p-1 hover:bg-gray-50 rounded"
+                  >
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </button>
                   <button
                     onClick={() => onRemovePacote(pacote.id)}
                     className="w-10 flex justify-center p-1 hover:bg-red-50 rounded"

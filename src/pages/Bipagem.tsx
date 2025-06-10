@@ -10,7 +10,7 @@ import { toast } from '@/hooks/use-toast';
 interface Pacote {
   id: string;
   codigo: string;
-  status: 'bipado' | 'pendencia';
+  status: 'bipado';
 }
 
 const Bipagem = () => {
@@ -39,40 +39,54 @@ const Bipagem = () => {
     // Verifica se o código já foi bipado
     const existingPacote = pacotes.find(p => p.codigo === code);
     if (existingPacote) {
-      toast({
-        title: "Código já bipado",
-        description: `O código ${code} já foi registrado`,
-        variant: "destructive",
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'erro', 
+          codigo: code 
+        },
+        replace: true 
       });
       return;
     }
 
     // Simula validação do código (70% chance de sucesso)
     const isSuccess = Math.random() > 0.3;
-    const newPacote: Pacote = {
-      id: Date.now().toString(),
-      codigo: code,
-      status: isSuccess ? 'bipado' : 'pendencia'
-    };
-    
-    setPacotes(prev => [...prev, newPacote]);
     
     if (isSuccess) {
-      toast({
-        title: "Item bipado com sucesso!",
-        description: `Código: ${code}`,
+      const newPacote: Pacote = {
+        id: Date.now().toString(),
+        codigo: code,
+        status: 'bipado'
+      };
+      
+      setPacotes(prev => [...prev, newPacote]);
+      
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'sucesso', 
+          codigo: code 
+        },
+        replace: true 
       });
     } else {
-      toast({
-        title: "Item com pendência",
-        description: "Verifique o código e tente novamente",
-        variant: "destructive",
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'pendencia', 
+          codigo: code 
+        },
+        replace: true 
       });
     }
   };
 
   const removePacote = (id: string) => {
     setPacotes(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleDigitarCodigo = () => {
+    navigate('/bipagem/digitar-codigo', { 
+      state: { pacotes } 
+    });
   };
 
   const finalizarBipagem = () => {
@@ -138,14 +152,14 @@ const Bipagem = () => {
           {/* Action Buttons */}
           <div className="flex gap-3">
             <button
-              onClick={() => navigate('/bipagem/digitar-codigo')}
-              className="flex-1 bg-white border-2 border-orange-500 text-black py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
+              onClick={handleDigitarCodigo}
+              className="flex-1 bg-white border-2 border-orange-500 text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
             >
               Digitar código
             </button>
             <button
               onClick={finalizarBipagem}
-              className="flex-1 bg-black text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-gray-800 transition-colors"
+              className="flex-1 bg-white border-2 border-orange-500 text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
             >
               Finalizar
             </button>

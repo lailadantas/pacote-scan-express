@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,7 @@ import CadastroSucesso from "./pages/CadastroSucesso";
 import Index from "./pages/Index";
 import Bipagem from "./pages/Bipagem";
 import DigitarCodigo from "./pages/DigitarCodigo";
+import ResultadoBipagem from "./pages/ResultadoBipagem";
 import DadosTransferencia from "./pages/DadosTransferencia";
 import UploadTransferencia from "./pages/UploadTransferencia";
 import TransferenciaSucesso from "./pages/TransferenciaSucesso";
@@ -42,6 +44,8 @@ import NaoPudeColetar from "./pages/NaoPudeColetar";
 import MotivoColeta from "./pages/MotivoColeta";
 import AssinaturaColeta from "./pages/AssinaturaColeta";
 import Home2 from "./pages/Home2";
+import Perfil from "./pages/Perfil";
+import FinalizarRota from "./pages/FinalizarRota";
 
 const queryClient = new QueryClient();
 
@@ -61,8 +65,10 @@ const App = () => (
           <Route path="/cadastrosucesso" element={<CadastroSucesso />} />
           <Route path="/home" element={<Index />} />
           <Route path="/home2" element={<Home2 />} />
+          <Route path="/perfil" element={<Perfil />} />
           <Route path="/bipagem" element={<Bipagem />} />
           <Route path="/bipagem/digitar-codigo" element={<DigitarCodigo />} />
+          <Route path="/resultado-bipagem" element={<ResultadoBipagem />} />
           <Route path="/dados-transferencia" element={<DadosTransferencia />} />
           <Route path="/upload-transferencia" element={<UploadTransferencia />} />
           <Route path="/transferencia-sucesso" element={<TransferenciaSucesso />} />
@@ -70,6 +76,7 @@ const App = () => (
           <Route path="/meusservicos" element={<MeusServicos />} />
           <Route path="/detalhedoservico/:id" element={<DetalheDoServico />} />
           <Route path="/rotaemandamento/:id" element={<RotaEmAndamento />} />
+          <Route path="/finalizar-rota/:id" element={<FinalizarRota />} />
           <Route path="/detalhedoponto/:id" element={<DetalheDoPonto />} />
           <Route path="/entregar/:id" element={<Entregar />} />
           <Route path="/dadosrecebedor/:id" element={<DadosRecebedor />} />

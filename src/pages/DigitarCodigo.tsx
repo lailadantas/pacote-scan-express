@@ -1,13 +1,14 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
 
 const DigitarCodigo = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { pacotes = [] } = location.state || {};
   const [codigo, setCodigo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -15,10 +16,25 @@ const DigitarCodigo = () => {
     e.preventDefault();
     
     if (!codigo.trim()) {
-      toast({
-        title: "Código inválido",
-        description: "Por favor, insira um código válido",
-        variant: "destructive",
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'erro', 
+          codigo: codigo 
+        },
+        replace: true 
+      });
+      return;
+    }
+
+    // Verifica se o código já existe
+    const existingPacote = pacotes.find((p: any) => p.codigo === codigo);
+    if (existingPacote) {
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'erro', 
+          codigo: codigo 
+        },
+        replace: true 
       });
       return;
     }
@@ -27,12 +43,14 @@ const DigitarCodigo = () => {
     
     // Simula processamento
     setTimeout(() => {
-      toast({
-        title: "Código processado!",
-        description: `Código ${codigo} foi bipado com sucesso`,
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'sucesso', 
+          codigo: codigo 
+        },
+        replace: true 
       });
-      navigate('/bipagem');
-    }, 1500);
+    }, 1000);
   };
 
   return (
@@ -65,7 +83,7 @@ const DigitarCodigo = () => {
               
               <Button
                 type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-50"
                 disabled={isLoading}
               >
                 {isLoading ? 'Processando...' : 'Enviar'}
