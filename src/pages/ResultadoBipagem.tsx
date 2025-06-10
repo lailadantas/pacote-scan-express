@@ -6,15 +6,18 @@ import { Check, AlertTriangle, X } from 'lucide-react';
 const ResultadoBipagem = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { resultado, codigo } = location.state || {};
+  const { resultado, codigo, pacotes = [] } = location.state || {};
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/bipagem', { replace: true });
+      navigate('/bipagem', { 
+        state: { pacotes },
+        replace: true 
+      });
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, pacotes]);
 
   const getIcon = () => {
     switch (resultado) {

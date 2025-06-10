@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
 import PacotesBipados from '@/components/PacotesBipados';
 import BarcodeScanner from '@/components/BarcodeScanner';
@@ -15,6 +15,7 @@ interface Pacote {
 
 const Bipagem = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
@@ -25,6 +26,13 @@ const Bipagem = () => {
   const isColeta = contexto === 'coleta';
   const isReceber = contexto === 'receber';
   const isTransferencia = contexto === 'transferencia';
+
+  // Recuperar pacotes do estado se existirem
+  useEffect(() => {
+    if (location.state?.pacotes) {
+      setPacotes(location.state.pacotes);
+    }
+  }, [location.state]);
 
   const getTitulo = () => {
     if (isColeta) return "Bipagem - Coleta";
@@ -42,7 +50,8 @@ const Bipagem = () => {
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'erro', 
-          codigo: code 
+          codigo: code,
+          pacotes: pacotes
         },
         replace: true 
       });
@@ -59,12 +68,13 @@ const Bipagem = () => {
         status: 'bipado'
       };
       
-      setPacotes(prev => [...prev, newPacote]);
+      const updatedPacotes = [...pacotes, newPacote];
       
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'sucesso', 
-          codigo: code 
+          codigo: code,
+          pacotes: updatedPacotes
         },
         replace: true 
       });
@@ -72,7 +82,8 @@ const Bipagem = () => {
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'pendencia', 
-          codigo: code 
+          codigo: code,
+          pacotes: pacotes
         },
         replace: true 
       });

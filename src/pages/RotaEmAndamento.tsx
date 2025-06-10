@@ -2,7 +2,6 @@
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { MapPin, Package, Clock, Phone, MessageCircle, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 const RotaEmAndamento = () => {
   const navigate = useNavigate();
@@ -157,14 +156,6 @@ const RotaEmAndamento = () => {
             </div>
           ))}
         </div>
-
-        {/* Botão finalizar */}
-        <Button 
-          onClick={() => navigate(`/finalizar-rota/${id}`)}
-          className="w-full"
-        >
-          Finalizar
-        </Button>
       </div>
     </MobileLayout>
   );

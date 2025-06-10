@@ -19,7 +19,8 @@ const DigitarCodigo = () => {
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'erro', 
-          codigo: codigo 
+          codigo: codigo,
+          pacotes: pacotes
         },
         replace: true 
       });
@@ -32,7 +33,8 @@ const DigitarCodigo = () => {
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'erro', 
-          codigo: codigo 
+          codigo: codigo,
+          pacotes: pacotes
         },
         replace: true 
       });
@@ -43,10 +45,21 @@ const DigitarCodigo = () => {
     
     // Simula processamento
     setTimeout(() => {
+      // Cria o novo pacote
+      const newPacote = {
+        id: Date.now().toString(),
+        codigo: codigo,
+        status: 'bipado'
+      };
+      
+      // Adiciona à lista de pacotes
+      const updatedPacotes = [...pacotes, newPacote];
+      
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'sucesso', 
-          codigo: codigo 
+          codigo: codigo,
+          pacotes: updatedPacotes
         },
         replace: true 
       });
