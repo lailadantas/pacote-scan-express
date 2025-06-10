@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
@@ -6,6 +5,7 @@ import PacotesBipados from '@/components/PacotesBipados';
 import BarcodeScanner from '@/components/BarcodeScanner';
 import { ScanLine } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useBeepSounds } from '@/hooks/useBeepSounds';
 
 interface Pacote {
   id: string;
@@ -19,6 +19,7 @@ const Bipagem = () => {
   const [searchParams] = useSearchParams();
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
+  const { playSuccessBeep, playErrorBeep } = useBeepSounds();
 
   // Detectar contexto
   const contexto = searchParams.get('contexto');
@@ -47,6 +48,7 @@ const Bipagem = () => {
     // Verifica se o código já foi bipado na lista atual
     const existingPacote = pacotes.find(p => p.codigo === code);
     if (existingPacote) {
+      playErrorBeep(); // Som de erro para item duplicado
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'erro', 
@@ -62,6 +64,7 @@ const Bipagem = () => {
     const isSuccess = Math.random() > 0.3;
     
     if (isSuccess) {
+      playSuccessBeep(); // Som de sucesso
       const newPacote: Pacote = {
         id: Date.now().toString(),
         codigo: code,
@@ -79,6 +82,7 @@ const Bipagem = () => {
         replace: true 
       });
     } else {
+      playErrorBeep(); // Som de erro para pendência
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'pendencia', 

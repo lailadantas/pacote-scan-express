@@ -350,117 +350,189 @@ const UsuarioTipoPonto = () => {
 
             {formData.tipoPessoa === 'juridica' && (
               <>
-                <Input
-                  placeholder="CNPJ"
-                  value={formData.cnpj}
-                  onChange={(e) => handleInputChange('cnpj', e.target.value)}
-                />
-                <Input
-                  placeholder="Inscrição Estadual"
-                  value={formData.inscricaoEstadual}
-                  onChange={(e) => handleInputChange('inscricaoEstadual', e.target.value)}
-                />
-                <Input
-                  placeholder="Inscrição Municipal"
-                  value={formData.inscricaoMunicipal}
-                  onChange={(e) => handleInputChange('inscricaoMunicipal', e.target.value)}
-                />
-                <Input
-                  placeholder="Razão Social"
-                  value={formData.razaoSocial}
-                  onChange={(e) => handleInputChange('razaoSocial', e.target.value)}
-                />
-                <Input
-                  placeholder="Nome Fantasia"
-                  value={formData.nomeFantasia}
-                  onChange={(e) => handleInputChange('nomeFantasia', e.target.value)}
-                />
+                <div>
+                  <Label htmlFor="cnpj">CNPJ</Label>
+                  <Input
+                    id="cnpj"
+                    placeholder="00.000.000/0000-00"
+                    value={formData.cnpj}
+                    onChange={(e) => handleInputChange('cnpj', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="inscricaoEstadual">Inscrição Estadual</Label>
+                  <Input
+                    id="inscricaoEstadual"
+                    placeholder="Inscrição Estadual"
+                    value={formData.inscricaoEstadual}
+                    onChange={(e) => handleInputChange('inscricaoEstadual', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="inscricaoMunicipal">Inscrição Municipal</Label>
+                  <Input
+                    id="inscricaoMunicipal"
+                    placeholder="Inscrição Municipal"
+                    value={formData.inscricaoMunicipal}
+                    onChange={(e) => handleInputChange('inscricaoMunicipal', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="razaoSocial">Razão Social</Label>
+                  <Input
+                    id="razaoSocial"
+                    placeholder="Razão Social"
+                    value={formData.razaoSocial}
+                    onChange={(e) => handleInputChange('razaoSocial', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
+                  <Input
+                    id="nomeFantasia"
+                    placeholder="Nome Fantasia"
+                    value={formData.nomeFantasia}
+                    onChange={(e) => handleInputChange('nomeFantasia', e.target.value)}
+                  />
+                </div>
               </>
             )}
 
             {formData.tipoPessoa === 'fisica' && (
-              <Input
-                placeholder="000.000.000-00"
-                value={formData.cpf}
-                onChange={(e) => handleInputChange('cpf', e.target.value)}
-                maxLength={14}
-              />
+              <div>
+                <Label htmlFor="cpf">CPF</Label>
+                <Input
+                  id="cpf"
+                  placeholder="000.000.000-00"
+                  value={formData.cpf}
+                  onChange={(e) => handleInputChange('cpf', e.target.value)}
+                  maxLength={14}
+                />
+              </div>
             )}
 
-            <Input
-              placeholder="00:00"
-              value={formData.horaLimiteColeta}
-              onChange={(e) => handleInputChange('horaLimiteColeta', e.target.value)}
-              maxLength={5}
-            />
+            <div>
+              <Label htmlFor="horaLimiteColeta">Hora limite da coleta</Label>
+              <Input
+                id="horaLimiteColeta"
+                placeholder="00:00"
+                value={formData.horaLimiteColeta}
+                onChange={(e) => handleInputChange('horaLimiteColeta', e.target.value)}
+                maxLength={5}
+              />
+            </div>
           </div>
         );
 
       case 5:
         return (
           <div className="space-y-4">
-            <Input
-              placeholder="00000-000"
-              value={formData.cep}
-              onChange={(e) => handleInputChange('cep', e.target.value)}
-              maxLength={9}
-            />
-            <Input
-              placeholder="Estado"
-              value={formData.estado}
-              onChange={(e) => handleInputChange('estado', e.target.value)}
-            />
-            <Input
-              placeholder="Cidade"
-              value={formData.cidade}
-              onChange={(e) => handleInputChange('cidade', e.target.value)}
-            />
-            <Input
-              placeholder="Bairro"
-              value={formData.bairro}
-              onChange={(e) => handleInputChange('bairro', e.target.value)}
-            />
-            <Input
-              placeholder="Logradouro"
-              value={formData.logradouro}
-              onChange={(e) => handleInputChange('logradouro', e.target.value)}
-            />
-            <Input
-              placeholder="Número"
-              value={formData.numero}
-              onChange={(e) => handleInputChange('numero', e.target.value)}
-            />
-            <Input
-              placeholder="Complemento"
-              value={formData.complemento}
-              onChange={(e) => handleInputChange('complemento', e.target.value)}
-            />
+            <div>
+              <Label htmlFor="cep">CEP</Label>
+              <Input
+                id="cep"
+                placeholder="00000-000"
+                value={formData.cep}
+                onChange={(e) => handleInputChange('cep', e.target.value)}
+                maxLength={9}
+              />
+            </div>
+            <div>
+              <Label htmlFor="estado">Estado</Label>
+              <Input
+                id="estado"
+                placeholder="Estado"
+                value={formData.estado}
+                onChange={(e) => handleInputChange('estado', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="cidade">Cidade</Label>
+              <Input
+                id="cidade"
+                placeholder="Cidade"
+                value={formData.cidade}
+                onChange={(e) => handleInputChange('cidade', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="bairro">Bairro</Label>
+              <Input
+                id="bairro"
+                placeholder="Bairro"
+                value={formData.bairro}
+                onChange={(e) => handleInputChange('bairro', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="logradouro">Logradouro</Label>
+              <Input
+                id="logradouro"
+                placeholder="Logradouro"
+                value={formData.logradouro}
+                onChange={(e) => handleInputChange('logradouro', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="numero">Número</Label>
+              <Input
+                id="numero"
+                placeholder="Número"
+                value={formData.numero}
+                onChange={(e) => handleInputChange('numero', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="complemento">Complemento</Label>
+              <Input
+                id="complemento"
+                placeholder="Complemento"
+                value={formData.complemento}
+                onChange={(e) => handleInputChange('complemento', e.target.value)}
+              />
+            </div>
           </div>
         );
 
       case 6:
         return (
           <div className="space-y-4">
-            <Input
-              placeholder="Banco"
-              value={formData.banco}
-              onChange={(e) => handleInputChange('banco', e.target.value)}
-            />
-            <Input
-              placeholder="Agência"
-              value={formData.agencia}
-              onChange={(e) => handleInputChange('agencia', e.target.value)}
-            />
-            <Input
-              placeholder="Conta"
-              value={formData.conta}
-              onChange={(e) => handleInputChange('conta', e.target.value)}
-            />
-            <Input
-              placeholder="Titularidade"
-              value={formData.titularidade}
-              onChange={(e) => handleInputChange('titularidade', e.target.value)}
-            />
+            <div>
+              <Label htmlFor="banco">Banco</Label>
+              <Input
+                id="banco"
+                placeholder="Banco"
+                value={formData.banco}
+                onChange={(e) => handleInputChange('banco', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="agencia">Agência</Label>
+              <Input
+                id="agencia"
+                placeholder="Agência"
+                value={formData.agencia}
+                onChange={(e) => handleInputChange('agencia', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="conta">Conta</Label>
+              <Input
+                id="conta"
+                placeholder="Conta"
+                value={formData.conta}
+                onChange={(e) => handleInputChange('conta', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="titularidade">Titularidade</Label>
+              <Input
+                id="titularidade"
+                placeholder="Titularidade"
+                value={formData.titularidade}
+                onChange={(e) => handleInputChange('titularidade', e.target.value)}
+              />
+            </div>
             
             <div>
               <Label>Tipo de conta</Label>
@@ -476,11 +548,15 @@ const UsuarioTipoPonto = () => {
               </RadioGroup>
             </div>
 
-            <Input
-              placeholder="Chave PIX"
-              value={formData.chavePix}
-              onChange={(e) => handleInputChange('chavePix', e.target.value)}
-            />
+            <div>
+              <Label htmlFor="chavePix">Chave PIX</Label>
+              <Input
+                id="chavePix"
+                placeholder="Chave PIX"
+                value={formData.chavePix}
+                onChange={(e) => handleInputChange('chavePix', e.target.value)}
+              />
+            </div>
           </div>
         );
 
