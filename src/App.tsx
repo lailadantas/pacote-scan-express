@@ -12,6 +12,7 @@ import UsuarioTipoPonto from "./pages/UsuarioTipoPonto";
 import CadastroSucesso from "./pages/CadastroSucesso";
 import Index from "./pages/Index";
 import Bipagem from "./pages/Bipagem";
+import Transferir from "./pages/Transferir";
 import Receber from "./pages/Receber";
 import DigitarCodigo from "./pages/DigitarCodigo";
 import ResultadoBipagem from "./pages/ResultadoBipagem";
@@ -71,6 +72,7 @@ const App = () => (
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/escolhertipo" element={<EscolherTipo />} />
           <Route path="/bipagem" element={<Bipagem />} />
+          <Route path="/transferir" element={<Transferir />} />
           <Route path="/receber" element={<Receber />} />
           <Route path="/bipagem/digitar-codigo" element={<DigitarCodigo />} />
           <Route path="/resultado-bipagem" element={<ResultadoBipagem />} />

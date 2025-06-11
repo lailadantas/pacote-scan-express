@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
 import PacotesBipados from '@/components/PacotesBipados';
 import BarcodeScanner from '@/components/BarcodeScanner';
@@ -14,18 +14,12 @@ interface Pacote {
   status: 'bipado';
 }
 
-const Bipagem = () => {
+const Transferir = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
   const { playSuccessBeep, playErrorBeep } = useBeepSounds();
-
-  // Detectar contexto
-  const contexto = searchParams.get('contexto');
-  const pontoId = searchParams.get('pontoId');
-  const isColeta = contexto === 'coleta';
 
   // Recuperar pacotes do estado se existirem
   useEffect(() => {
@@ -33,11 +27,6 @@ const Bipagem = () => {
       setPacotes(location.state.pacotes);
     }
   }, [location.state]);
-
-  const getTitulo = () => {
-    if (isColeta) return "Bipagem - Coleta";
-    return "Bipagem de itens";
-  };
 
   const handleCodeDetected = (code: string) => {
     console.log('Código detectado:', code);
@@ -111,20 +100,15 @@ const Bipagem = () => {
       return;
     }
     
-    if (isColeta) {
-      // Se é coleta, vai para a tela de assinatura
-      navigate(`/assinatura-coleta/${pontoId}`);
-    } else {
-      // Para outros contextos, vai para EscolherTipo
-      navigate('/escolhertipo', { 
-        state: { pacotes } 
-      });
-    }
+    // Para transferência, vai para dados da transferência
+    navigate('/dados-transferencia', { 
+      state: { pacotes } 
+    });
   };
 
   return (
     <MobileLayout 
-      title={getTitulo()} 
+      title="Bipagem - Transferência" 
       showBackButton 
       showBottomNav={false}
       onBackClick={() => navigate('/home')}
@@ -175,4 +159,4 @@ const Bipagem = () => {
   );
 };
 
-export default Bipagem;
+export default Transferir;
