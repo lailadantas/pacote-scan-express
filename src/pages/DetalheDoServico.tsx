@@ -105,7 +105,7 @@ const DetalheDoServico = () => {
             <div 
               key={servico.id}
               onClick={() => navigate(`/detalhedoponto/${servico.id}`)}
-              className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow w-full"
             >
               {/* Header do card */}
               <div className={`text-white p-3 flex justify-between items-center ${

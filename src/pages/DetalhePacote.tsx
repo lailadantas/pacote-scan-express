@@ -1,16 +1,29 @@
 
+import { useState } from 'react';
 import MobileLayout from '@/components/MobileLayout';
-import { useParams } from 'react-router-dom';
-import { Package, MapPin, User, Calendar, Clock } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Package, MapPin, User, Calendar, Clock, Edit, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 
 const DetalhePacote = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Dados mockados baseados no ID
-  const pacoteData = {
+  // Get package data from localStorage
+  const userStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+  const pacote = userStock.find((p: any) => p.id === id);
+
+  // If package not found, show default mock data
+  const pacoteData = pacote || {
+    id: id,
     codigo: `PKG0${id?.padStart(2, '0')}`,
-    status: id && parseInt(id) <= 5 ? 'Aguardando' : 
-           id && parseInt(id) <= 8 ? 'Problema' : 'Em rota',
+    status: 'Bipado',
     destinatario: 'João Silva Santos',
     telefone: '(11) 99999-9999',
     endereco: 'Rua das Flores, 123',
@@ -25,11 +38,45 @@ const DetalhePacote = () => {
     observacoes: 'Entrega apenas no período da manhã'
   };
 
+  const [editData, setEditData] = useState(pacoteData);
+
+  const handleSave = () => {
+    if (pacote) {
+      // Update existing package in localStorage
+      const updatedStock = userStock.map((p: any) => 
+        p.id === id ? { ...p, ...editData } : p
+      );
+      localStorage.setItem('userStock', JSON.stringify(updatedStock));
+    }
+    
+    setIsEditing(false);
+    toast({
+      title: "Dados atualizados",
+      description: "As informações do pacote foram salvas com sucesso.",
+    });
+  };
+
+  const handleDelete = () => {
+    if (pacote) {
+      // Remove package from localStorage
+      const updatedStock = userStock.filter((p: any) => p.id !== id);
+      localStorage.setItem('userStock', JSON.stringify(updatedStock));
+      
+      toast({
+        title: "Pacote removido",
+        description: "O pacote foi removido do estoque com sucesso.",
+      });
+    }
+    
+    navigate('/estoque/pacotes-comigo');
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Aguardando': return 'text-blue-600 bg-blue-50';
       case 'Problema': return 'text-red-600 bg-red-50';
       case 'Em rota': return 'text-green-600 bg-green-50';
+      case 'Bipado': return 'text-purple-600 bg-purple-50';
       default: return 'text-gray-600 bg-gray-50';
     }
   };
@@ -45,22 +92,118 @@ const DetalhePacote = () => {
                 <Package className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{pacoteData.codigo}</h2>
-                <span className={`text-sm px-2 py-1 rounded-full ${getStatusColor(pacoteData.status)}`}>
-                  {pacoteData.status}
+                <h2 className="text-xl font-bold text-gray-900">{editData.codigo}</h2>
+                <span className={`text-sm px-2 py-1 rounded-full ${getStatusColor(editData.status)}`}>
+                  {editData.status}
                 </span>
               </div>
+            </div>
+            <div className="flex space-x-2">
+              <Dialog open={isEditing} onOpenChange={setIsEditing}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Editar Pacote</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    <div>
+                      <Label htmlFor="codigo">Código</Label>
+                      <Input
+                        id="codigo"
+                        value={editData.codigo}
+                        onChange={(e) => setEditData({...editData, codigo: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="destinatario">Destinatário</Label>
+                      <Input
+                        id="destinatario"
+                        value={editData.destinatario}
+                        onChange={(e) => setEditData({...editData, destinatario: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="telefone">Telefone</Label>
+                      <Input
+                        id="telefone"
+                        value={editData.telefone}
+                        onChange={(e) => setEditData({...editData, telefone: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="endereco">Endereço</Label>
+                      <Input
+                        id="endereco"
+                        value={editData.endereco}
+                        onChange={(e) => setEditData({...editData, endereco: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="peso">Peso</Label>
+                      <Input
+                        id="peso"
+                        value={editData.peso}
+                        onChange={(e) => setEditData({...editData, peso: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="observacoes">Observações</Label>
+                      <Input
+                        id="observacoes"
+                        value={editData.observacoes || ''}
+                        onChange={(e) => setEditData({...editData, observacoes: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEditing(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleSave}>
+                      Salvar
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="icon" className="text-red-600 hover:bg-red-50">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirmar exclusão</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-gray-600">
+                    Tem certeza de que deseja remover o pacote {editData.codigo} do seu estoque?
+                  </p>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                      Cancelar
+                    </Button>
+                    <Button variant="destructive" onClick={handleDelete}>
+                      Remover
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-500">Peso:</span>
-              <span className="font-medium ml-2">{pacoteData.peso}</span>
+              <span className="font-medium ml-2">{editData.peso}</span>
             </div>
             <div>
               <span className="text-gray-500">Dimensões:</span>
-              <span className="font-medium ml-2">{pacoteData.dimensoes}</span>
+              <span className="font-medium ml-2">{editData.dimensoes}</span>
             </div>
           </div>
         </div>
@@ -75,11 +218,11 @@ const DetalhePacote = () => {
           <div className="space-y-3 text-sm">
             <div>
               <span className="text-gray-500">Nome:</span>
-              <span className="font-medium ml-2">{pacoteData.destinatario}</span>
+              <span className="font-medium ml-2">{editData.destinatario}</span>
             </div>
             <div>
               <span className="text-gray-500">Telefone:</span>
-              <span className="font-medium ml-2">{pacoteData.telefone}</span>
+              <span className="font-medium ml-2">{editData.telefone}</span>
             </div>
           </div>
         </div>
@@ -92,10 +235,10 @@ const DetalhePacote = () => {
           </div>
           
           <div className="space-y-2 text-sm">
-            <div className="font-medium">{pacoteData.endereco}</div>
-            <div className="text-gray-600">{pacoteData.complemento}</div>
-            <div className="text-gray-600">{pacoteData.bairro} - {pacoteData.cidade}</div>
-            <div className="text-gray-600">CEP: {pacoteData.cep}</div>
+            <div className="font-medium">{editData.endereco}</div>
+            <div className="text-gray-600">{editData.complemento}</div>
+            <div className="text-gray-600">{editData.bairro} - {editData.cidade}</div>
+            <div className="text-gray-600">CEP: {editData.cep}</div>
           </div>
         </div>
 
@@ -121,17 +264,17 @@ const DetalhePacote = () => {
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4 text-gray-400" />
               <span className="text-gray-500">Data de recebimento:</span>
-              <span className="font-medium">{pacoteData.dataRecebimento}</span>
+              <span className="font-medium">{editData.dataRecebimento}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Clock className="w-4 h-4 text-gray-400" />
               <span className="text-gray-500">Horário:</span>
-              <span className="font-medium">{pacoteData.horarioRecebimento}</span>
+              <span className="font-medium">{editData.horarioRecebimento}</span>
             </div>
-            {pacoteData.observacoes && (
+            {editData.observacoes && (
               <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                 <span className="text-yellow-800 text-sm font-medium">Observações:</span>
-                <p className="text-yellow-700 text-sm mt-1">{pacoteData.observacoes}</p>
+                <p className="text-yellow-700 text-sm mt-1">{editData.observacoes}</p>
               </div>
             )}
           </div>
