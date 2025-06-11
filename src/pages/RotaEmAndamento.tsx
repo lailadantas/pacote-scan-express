@@ -2,12 +2,15 @@
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { MapPin, Package, Clock, Phone, MessageCircle, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const RotaEmAndamento = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [abaAtiva, setAbaAtiva] = useState<'em-andamento' | 'finalizados'>('em-andamento');
+  
+  // Estado para controlar quais serviços foram finalizados
+  const [servicosFinalizados, setServicosFinalizados] = useState<number[]>([]);
 
   const rota = {
     id: 1,
@@ -16,11 +19,10 @@ const RotaEmAndamento = () => {
     horaInicio: "08:30"
   };
 
-  const servicos = [
+  const servicosIniciais = [
     {
       id: 1,
       tipo: "Entrega",
-      status: "Em andamento",
       numero: "#123456",
       endereco: "Rua Altino Arantes, 200",
       complemento: "Jardim América, São Paulo, CEP 14020200",
@@ -34,7 +36,6 @@ const RotaEmAndamento = () => {
     {
       id: 2,
       tipo: "Coleta",
-      status: "Em andamento", 
       numero: "#123456",
       endereco: "Rua João Pessoa, 500",
       complemento: "Jardim América, São Paulo, CEP 14020200",
@@ -48,7 +49,6 @@ const RotaEmAndamento = () => {
     {
       id: 3,
       tipo: "Entrega",
-      status: "Concluído",
       numero: "#123456",
       endereco: "Rua do Comércio, 789",
       complemento: "Centro",
@@ -61,19 +61,43 @@ const RotaEmAndamento = () => {
     }
   ];
 
+  // Mapear serviços com status dinâmico baseado no estado
+  const servicos = servicosIniciais.map(servico => ({
+    ...servico,
+    status: servicosFinalizados.includes(servico.id) ? "Concluído" : "Em andamento"
+  }));
+
+  // Verificar se o usuário voltou de uma tela de finalização
+  useEffect(() => {
+    const servicoFinalizado = localStorage.getItem('servicoFinalizado');
+    if (servicoFinalizado) {
+      const servicoId = parseInt(servicoFinalizado);
+      if (!servicosFinalizados.includes(servicoId)) {
+        setServicosFinalizados(prev => [...prev, servicoId]);
+      }
+      localStorage.removeItem('servicoFinalizado');
+    }
+  }, [servicosFinalizados]);
+
   // Filtrar serviços baseado na aba ativa
   const servicosEmAndamento = servicos.filter(servico => servico.status === "Em andamento");
-  const servicosFinalizados = servicos.filter(servico => servico.status === "Concluído");
-  const servicosExibidos = abaAtiva === 'em-andamento' ? servicosEmAndamento : servicosFinalizados;
+  const servicosConcluidos = servicos.filter(servico => servico.status === "Concluído");
+  const servicosExibidos = abaAtiva === 'em-andamento' ? servicosEmAndamento : servicosConcluidos;
   
   const totalServicos = servicos.length;
   const servicosAndamento = servicosEmAndamento.length;
-  const servicosFinalizadosCount = servicosFinalizados.length;
+  const servicosFinalizadosCount = servicosConcluidos.length;
 
-  // Calcular progresso (1 de 10 pontos)
-  const pontosCompletos = 1;
-  const totalPontos = 10;
-  const progresso = (pontosCompletos / totalPontos) * 100;
+  // Calcular progresso baseado em pontos finalizados vs total de pontos
+  const totalPontos = 10; // Total de pontos da rota
+  const pontosFinalizados = servicosFinalizadosCount;
+  const pontosEmAndamento = servicosAndamento;
+  const progresso = (pontosFinalizados / totalPontos) * 100;
+
+  const handleServicoClick = (servicoId: number) => {
+    // Navegar para detalhe do ponto
+    navigate(`/detalhedoponto/${servicoId}`);
+  };
 
   return (
     <MobileLayout title={rota.titulo} showBackButton>
@@ -130,7 +154,7 @@ const RotaEmAndamento = () => {
         <div className="bg-white px-4 pb-4">
           <div className="flex items-center space-x-2 mt-4">
             <MapPin className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">{pontosCompletos}/{totalPontos} pontos</span>
+            <span className="text-sm font-medium text-gray-700">{pontosFinalizados}/{totalPontos} pontos</span>
           </div>
           <div className="mt-2 bg-gray-200 rounded-full h-2">
             <div 
@@ -163,7 +187,7 @@ const RotaEmAndamento = () => {
 
               {/* Card do serviço */}
               <div 
-                onClick={() => navigate(`/detalhedoponto/${servico.id}`)}
+                onClick={() => handleServicoClick(servico.id)}
                 className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start space-x-3">
@@ -187,13 +211,21 @@ const RotaEmAndamento = () => {
                         Vou para lá
                       </button>
                     )}
+
+                    {/* Status de finalizado para aba finalizados */}
+                    {abaAtiva === 'finalizados' && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm text-green-600 font-medium">Finalizado</span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-gray-900 text-sm">
                       {servico.horario}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {servico.horarioLabel}
+                      {abaAtiva === 'finalizados' ? 'Finalizado' : servico.horarioLabel}
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400 mt-1" />
                   </div>
