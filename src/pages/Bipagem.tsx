@@ -6,6 +6,8 @@ import BarcodeScanner from '@/components/BarcodeScanner';
 import { ScanLine } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Pacote {
   id: string;
@@ -19,6 +21,7 @@ const Bipagem = () => {
   const [searchParams] = useSearchParams();
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { playSuccessBeep, playErrorBeep } = useBeepSounds();
 
   // Detectar contexto
@@ -117,14 +120,12 @@ const Bipagem = () => {
     if (isColeta) {
       // Se é coleta, vai para a tela de assinatura
       navigate(`/assinatura-coleta/${pontoId}`);
+    } else if (isReceber) {
+      // Para receber, mostra modal de confirmação
+      setShowConfirmModal(true);
     } else if (isTransferencia) {
-      // Se é transferência, remove do estoque e vai para EscolherTipo
-      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
-      const pacoteIds = pacotes.map(p => p.id);
-      const updatedStock = existingStock.filter(item => !pacoteIds.includes(item.id));
-      localStorage.setItem('userStock', JSON.stringify(updatedStock));
-      
-      navigate('/escolhertipo', { 
+      // Para transferência, vai para dados da transferência
+      navigate('/dados-transferencia', { 
         state: { pacotes } 
       });
     } else {
@@ -133,6 +134,21 @@ const Bipagem = () => {
         state: { pacotes } 
       });
     }
+  };
+
+  const confirmarRecebimento = () => {
+    // Adiciona ao estoque local
+    const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+    const updatedStock = [...existingStock, ...pacotes];
+    localStorage.setItem('userStock', JSON.stringify(updatedStock));
+    
+    toast({
+      title: "Recebimento finalizado!",
+      description: `${pacotes.length} pacotes recebidos no estoque`,
+    });
+    
+    setShowConfirmModal(false);
+    navigate('/estoque');
   };
 
   return (
@@ -184,6 +200,30 @@ const Bipagem = () => {
           onRemovePacote={removePacote}
         />
       </div>
+
+      {/* Modal de Confirmação para Recebimento */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle>Confirmar recebimento</DialogTitle>
+            <DialogDescription>
+              Deseja realmente finalizar o recebimento de {pacotes.length} pacotes?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col space-y-2 sm:flex-col sm:space-y-2 sm:space-x-0">
+            <Button onClick={confirmarRecebimento} className="w-full bg-orange-500 hover:bg-orange-600">
+              Confirmar
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmModal(false)}
+              className="w-full"
+            >
+              Cancelar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };

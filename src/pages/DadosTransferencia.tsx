@@ -23,7 +23,7 @@ const DadosTransferencia = () => {
     "Franquia Sorocaba - Vila Lucy"
   ];
 
-  const handleProximo = () => {
+  const handleFinalizar = () => {
     if (!destino) {
       toast({
         title: "Destino obrigatório",
@@ -33,14 +33,21 @@ const DadosTransferencia = () => {
       return;
     }
 
-    navigate('/upload-transferencia', {
-      state: { 
-        pacotes,
-        origem: origemAtual,
-        destino
-      }
+    // Remove do estoque local
+    const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+    const pacoteIds = pacotes.map(p => p.id);
+    const updatedStock = existingStock.filter(item => !pacoteIds.includes(item.id));
+    localStorage.setItem('userStock', JSON.stringify(updatedStock));
+    
+    toast({
+      title: "Transferência finalizada!",
+      description: `${pacotes.length} pacotes enviados para ${destino}`,
     });
+
+    navigate('/estoque');
   };
+
+  const isFormValid = destino.trim() !== '';
 
   return (
     <MobileLayout title="Dados da Transferência" showBackButton showBottomNav={false}>
@@ -93,10 +100,15 @@ const DadosTransferencia = () => {
         </div>
 
         <button
-          onClick={handleProximo}
-          className="w-full bg-black text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-gray-800 transition-colors"
+          onClick={handleFinalizar}
+          disabled={!isFormValid}
+          className={`w-full py-3 px-4 rounded-full font-medium transition-all ${
+            isFormValid
+              ? 'bg-gradient-to-r from-orange-500 to-purple-600 text-white hover:from-orange-600 hover:to-purple-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
-          Próximo
+          Finalizar
         </button>
       </div>
     </MobileLayout>
