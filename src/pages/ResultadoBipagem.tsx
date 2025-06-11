@@ -1,23 +1,35 @@
-
 import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Check, AlertTriangle, X } from 'lucide-react';
 
 const ResultadoBipagem = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { resultado, codigo, pacotes = [] } = location.state || {};
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/bipagem', { 
+      // Se veio de um contexto específico, redireciona com o contexto
+      const contexto = searchParams.get('contexto');
+      const pontoId = searchParams.get('pontoId');
+      
+      let targetPath = '/bipagem';
+      if (contexto) {
+        targetPath += `?contexto=${contexto}`;
+        if (pontoId) {
+          targetPath += `&pontoId=${pontoId}`;
+        }
+      }
+      
+      navigate(targetPath, { 
         state: { pacotes },
         replace: true 
       });
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [navigate, pacotes]);
+  }, [navigate, pacotes, searchParams]);
 
   const getIcon = () => {
     switch (resultado) {

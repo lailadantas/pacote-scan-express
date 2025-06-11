@@ -142,13 +142,11 @@ const Bipagem = () => {
     const updatedStock = [...existingStock, ...pacotes];
     localStorage.setItem('userStock', JSON.stringify(updatedStock));
     
-    toast({
-      title: "Recebimento finalizado!",
-      description: `${pacotes.length} pacotes recebidos no estoque`,
+    // Redireciona para a tela de resultado específica do recebimento
+    navigate('/resultado-bipagem-receber', { 
+      state: { pacotes },
+      replace: true 
     });
-    
-    setShowConfirmModal(false);
-    navigate('/estoque');
   };
 
   return (

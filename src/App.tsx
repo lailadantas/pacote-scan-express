@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,7 @@ import Index from "./pages/Index";
 import Bipagem from "./pages/Bipagem";
 import DigitarCodigo from "./pages/DigitarCodigo";
 import ResultadoBipagem from "./pages/ResultadoBipagem";
+import ResultadoBipagemReceber from "./pages/ResultadoBipagemReceber";
 import EscolherTipo from "./pages/EscolherTipo";
 import DadosTransferencia from "./pages/DadosTransferencia";
 import UploadTransferencia from "./pages/UploadTransferencia";
@@ -71,6 +71,7 @@ const App = () => (
           <Route path="/bipagem" element={<Bipagem />} />
           <Route path="/bipagem/digitar-codigo" element={<DigitarCodigo />} />
           <Route path="/resultado-bipagem" element={<ResultadoBipagem />} />
+          <Route path="/resultado-bipagem-receber" element={<ResultadoBipagemReceber />} />
           <Route path="/dados-transferencia" element={<DadosTransferencia />} />
           <Route path="/upload-transferencia" element={<UploadTransferencia />} />
           <Route path="/transferencia-sucesso" element={<TransferenciaSucesso />} />
