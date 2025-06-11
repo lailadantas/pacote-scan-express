@@ -1,12 +1,14 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
 import PacotesBipados from '@/components/PacotesBipados';
 import BarcodeScanner from '@/components/BarcodeScanner';
 import { ScanLine } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Pacote {
   id: string;
@@ -14,19 +16,13 @@ interface Pacote {
   status: 'bipado';
 }
 
-const Bipagem = () => {
+const Receber = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { playSuccessBeep, playErrorBeep } = useBeepSounds();
-
-  // Detectar contexto
-  const contexto = searchParams.get('contexto');
-  const pontoId = searchParams.get('pontoId');
-  const isColeta = contexto === 'coleta';
-  const isTransferencia = contexto === 'transferencia';
 
   // Recuperar pacotes do estado se existirem
   useEffect(() => {
@@ -34,12 +30,6 @@ const Bipagem = () => {
       setPacotes(location.state.pacotes);
     }
   }, [location.state]);
-
-  const getTitulo = () => {
-    if (isColeta) return "Bipagem - Coleta";
-    if (isTransferencia) return "Bipagem - Transferência";
-    return "Bipagem de itens";
-  };
 
   const handleCodeDetected = (code: string) => {
     console.log('Código detectado:', code);
@@ -113,25 +103,26 @@ const Bipagem = () => {
       return;
     }
     
-    if (isColeta) {
-      // Se é coleta, vai para a tela de assinatura
-      navigate(`/assinatura-coleta/${pontoId}`);
-    } else if (isTransferencia) {
-      // Para transferência, vai para dados da transferência
-      navigate('/dados-transferencia', { 
-        state: { pacotes } 
-      });
-    } else {
-      // Para outros contextos, vai para EscolherTipo
-      navigate('/escolhertipo', { 
-        state: { pacotes } 
-      });
-    }
+    // Para receber, mostra modal de confirmação
+    setShowConfirmModal(true);
+  };
+
+  const confirmarRecebimento = () => {
+    // Adiciona ao estoque local
+    const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+    const updatedStock = [...existingStock, ...pacotes];
+    localStorage.setItem('userStock', JSON.stringify(updatedStock));
+    
+    // Redireciona para a tela de resultado específica do recebimento
+    navigate('/resultado-bipagem-receber', { 
+      state: { pacotes },
+      replace: true 
+    });
   };
 
   return (
     <MobileLayout 
-      title={getTitulo()} 
+      title="Bipagem - Receber" 
       showBackButton 
       showBottomNav={false}
       onBackClick={() => navigate('/home')}
@@ -178,8 +169,32 @@ const Bipagem = () => {
           onRemovePacote={removePacote}
         />
       </div>
+
+      {/* Modal de Confirmação para Recebimento */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle>Confirmar recebimento</DialogTitle>
+            <DialogDescription>
+              Deseja realmente finalizar o recebimento de {pacotes.length} pacotes?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col space-y-2 sm:flex-col sm:space-y-2 sm:space-x-0">
+            <Button onClick={confirmarRecebimento} className="w-full bg-orange-500 hover:bg-orange-600">
+              Confirmar
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmModal(false)}
+              className="w-full"
+            >
+              Cancelar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };
 
-export default Bipagem;
+export default Receber;

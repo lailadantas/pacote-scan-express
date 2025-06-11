@@ -10,7 +10,7 @@ const ResultadoBipagemReceber = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/bipagem?contexto=receber', { 
+      navigate('/receber', { 
         state: { pacotes },
         replace: true 
       });
