@@ -54,7 +54,7 @@ const DetalheDoServico = () => {
           
           <Button 
             onClick={() => navigate(`/rotaemandamento/${id}`)}
-            className="w-full h-12 bg-gradient-to-r from-red-500 to-purple-600 hover:from-red-600 hover:to-purple-700 text-white font-medium rounded-full"
+            className="w-full h-14 bg-gradient-to-r from-red-500 to-purple-600 hover:from-red-600 hover:to-purple-700 text-white font-medium rounded-full"
           >
             Iniciar
           </Button>
