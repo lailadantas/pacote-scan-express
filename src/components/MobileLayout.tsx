@@ -48,9 +48,36 @@ const MobileLayout = ({
     navigate('/auth');
   };
 
+  // Função para verificar se está na área de serviços
+  const isServicosArea = () => {
+    const servicosRoutes = [
+      '/servicos',
+      '/meusservicos',
+      '/detalhedoservico',
+      '/rotaemandamento',
+      '/detalhedoponto',
+      '/entregar',
+      '/dadosrecebedor',
+      '/entregasucesso',
+      '/naopudeentregar',
+      '/motivoentrega',
+      '/coletar',
+      '/dadosremetente',
+      '/coletasucesso',
+      '/naopudecoletar',
+      '/motivocoleta',
+      '/assinatura-coleta',
+      '/registrosucesso',
+      '/rotafinalizada',
+      '/finalizar-rota'
+    ];
+    
+    return servicosRoutes.some(route => location.pathname.startsWith(route));
+  };
+
   const navItems = [
     { icon: Home, label: 'Home', path: '/home', active: location.pathname === '/home' || location.pathname === '/' },
-    { icon: MapPin, label: 'Serviços', path: '/servicos', active: location.pathname === '/servicos' },
+    { icon: MapPin, label: 'Serviços', path: '/servicos', active: isServicosArea() },
     { icon: Package, label: 'Estoque', path: '/estoque', active: location.pathname === '/estoque' },
     { icon: MessageCircle, label: 'Chat', path: '/chat', active: location.pathname === '/chat' },
     { icon: DollarSign, label: 'Financeiro', path: '/financeiro', active: location.pathname === '/financeiro' },
