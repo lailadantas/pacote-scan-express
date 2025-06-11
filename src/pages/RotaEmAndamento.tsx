@@ -2,10 +2,12 @@
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { MapPin, Package, Clock, Phone, MessageCircle, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 
 const RotaEmAndamento = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [abaAtiva, setAbaAtiva] = useState<'em-andamento' | 'finalizados'>('em-andamento');
 
   const rota = {
     id: 1,
@@ -54,14 +56,16 @@ const RotaEmAndamento = () => {
       destinatario: "Ana Costa",
       telefone: "(11) 77777-7777",
       horario: "10:15",
-      horarioLabel: "Chegada",
+      horarioLabel: "Chegou",
       pacotes: 5
     }
   ];
 
-  // Filtrar apenas serviços em andamento
+  // Filtrar serviços baseado na aba ativa
   const servicosEmAndamento = servicos.filter(servico => servico.status === "Em andamento");
   const servicosFinalizados = servicos.filter(servico => servico.status === "Concluído");
+  const servicosExibidos = abaAtiva === 'em-andamento' ? servicosEmAndamento : servicosFinalizados;
+  
   const totalServicos = servicos.length;
   const servicosAndamento = servicosEmAndamento.length;
   const servicosFinalizadosCount = servicosFinalizados.length;
@@ -77,15 +81,45 @@ const RotaEmAndamento = () => {
         {/* Abas de Status */}
         <div className="bg-white px-4 pt-4">
           <div className="flex bg-gray-100 rounded-lg p-1">
-            <div className="flex-1 bg-white rounded-md py-2 px-4 text-center shadow-sm">
-              <span className="text-sm font-medium text-gray-900">Em andamento</span>
-              <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">
+            <div 
+              className={`flex-1 py-2 px-4 text-center rounded-md cursor-pointer transition-colors ${
+                abaAtiva === 'em-andamento' 
+                  ? 'bg-white shadow-sm' 
+                  : 'hover:bg-gray-200'
+              }`}
+              onClick={() => setAbaAtiva('em-andamento')}
+            >
+              <span className={`text-sm font-medium ${
+                abaAtiva === 'em-andamento' ? 'text-gray-900' : 'text-gray-600'
+              }`}>
+                Em andamento
+              </span>
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                abaAtiva === 'em-andamento' 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
                 {servicosAndamento}
               </span>
             </div>
-            <div className="flex-1 py-2 px-4 text-center">
-              <span className="text-sm font-medium text-gray-600">Finalizados</span>
-              <span className="ml-2 bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-xs font-medium">
+            <div 
+              className={`flex-1 py-2 px-4 text-center rounded-md cursor-pointer transition-colors ${
+                abaAtiva === 'finalizados' 
+                  ? 'bg-white shadow-sm' 
+                  : 'hover:bg-gray-200'
+              }`}
+              onClick={() => setAbaAtiva('finalizados')}
+            >
+              <span className={`text-sm font-medium ${
+                abaAtiva === 'finalizados' ? 'text-gray-900' : 'text-gray-600'
+              }`}>
+                Finalizados
+              </span>
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                abaAtiva === 'finalizados' 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
                 {servicosFinalizadosCount}
               </span>
             </div>
@@ -108,7 +142,7 @@ const RotaEmAndamento = () => {
 
         {/* Lista de Serviços */}
         <div className="px-4 py-4 space-y-4">
-          {servicosEmAndamento.map((servico, index) => (
+          {servicosExibidos.map((servico, index) => (
             <div key={servico.id} className="space-y-3">
               {/* Badge do tipo de serviço */}
               <div className="flex items-center justify-between">
@@ -147,10 +181,12 @@ const RotaEmAndamento = () => {
                       {servico.detalhes}
                     </p>
                     
-                    {/* Botão "Vou para lá" */}
-                    <button className="text-purple-600 font-medium text-sm hover:text-purple-700">
-                      Vou para lá
-                    </button>
+                    {/* Botão "Vou para lá" apenas para serviços em andamento */}
+                    {abaAtiva === 'em-andamento' && (
+                      <button className="text-purple-600 font-medium text-sm hover:text-purple-700">
+                        Vou para lá
+                      </button>
+                    )}
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-gray-900 text-sm">
