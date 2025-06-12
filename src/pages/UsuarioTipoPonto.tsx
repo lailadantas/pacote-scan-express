@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { User, Mail, Phone, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Phone, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const UsuarioTipoPonto = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     // Tela 1
     nome: '',
@@ -103,6 +103,112 @@ const UsuarioTipoPonto = () => {
     }
   };
 
+  const enviarDadosWebhook = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      const dadosParaEnvio = {
+        // Dados pessoais
+        nome: formData.nome,
+        email: formData.email,
+        celular: formData.celular,
+        
+        // Verificação
+        codigoVerificacao: formData.codigo,
+        
+        // Senha
+        senha: formData.senha,
+        
+        // Dados gerais
+        tipoPessoa: formData.tipoPessoa,
+        ...(formData.tipoPessoa === 'juridica' && {
+          cnpj: formData.cnpj,
+          inscricaoEstadual: formData.inscricaoEstadual,
+          inscricaoMunicipal: formData.inscricaoMunicipal,
+          razaoSocial: formData.razaoSocial,
+          nomeFantasia: formData.nomeFantasia,
+        }),
+        ...(formData.tipoPessoa === 'fisica' && {
+          cpf: formData.cpf,
+        }),
+        horaLimiteColeta: formData.horaLimiteColeta,
+        
+        // Endereço
+        endereco: {
+          cep: formData.cep,
+          estado: formData.estado,
+          cidade: formData.cidade,
+          bairro: formData.bairro,
+          logradouro: formData.logradouro,
+          numero: formData.numero,
+          complemento: formData.complemento,
+          enderecoCompleto: `${formData.logradouro}, ${formData.numero} - ${formData.bairro}, ${formData.cidade}/${formData.estado}`
+        },
+        
+        // Dados bancários
+        dadosBancarios: {
+          banco: formData.banco,
+          agencia: formData.agencia,
+          conta: formData.conta,
+          titularidade: formData.titularidade,
+          tipoConta: formData.tipoConta,
+          chavePix: formData.chavePix
+        },
+        
+        // Termos
+        aceitaTermos: formData.aceitaTermos,
+        aceitaPrivacidade: formData.aceitaPrivacidade,
+        
+        // Metadados
+        tipoUsuario: 'Entregador',
+        dataSubmissao: new Date().toISOString(),
+        origem: 'ExpediApp'
+      };
+
+      console.log('Enviando dados para webhook:', dadosParaEnvio);
+
+      const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dadosParaEnvio)
+      });
+
+      if (response.ok) {
+        console.log('Dados enviados com sucesso para o webhook');
+        
+        // Salva os dados localmente também
+        const userData = {
+          ...formData,
+          tipoUsuario: 'Entregador',
+          endereco: `${formData.logradouro}, ${formData.numero} - ${formData.bairro}, ${formData.cidade}/${formData.estado}`
+        };
+        
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('currentUser', JSON.stringify({
+          name: formData.nome,
+          email: formData.email,
+          phone: formData.celular,
+          tipoUsuario: 'Entregador',
+          endereco: `${formData.logradouro}, ${formData.numero} - ${formData.bairro}, ${formData.cidade}/${formData.estado}`
+        }));
+        
+        navigate('/cadastrosucesso');
+      } else {
+        console.error('Erro ao enviar dados para webhook:', response.status, response.statusText);
+        // Mesmo com erro no webhook, continua o fluxo local
+        navigate('/cadastrosucesso');
+      }
+    } catch (error) {
+      console.error('Erro ao enviar dados para webhook:', error);
+      // Mesmo com erro no webhook, continua o fluxo local
+      navigate('/cadastrosucesso');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleInputChange = (field: string, value: string | boolean) => {
     if (field === 'cpf' && typeof value === 'string') {
       const formatted = formatCPF(value);
@@ -125,23 +231,8 @@ const UsuarioTipoPonto = () => {
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Salva os dados completos do usuário
-      const userData = {
-        ...formData,
-        tipoUsuario: 'Entregador',
-        endereco: `${formData.logradouro}, ${formData.numero} - ${formData.bairro}, ${formData.cidade}/${formData.estado}`
-      };
-      
-      localStorage.setItem('userData', JSON.stringify(userData));
-      localStorage.setItem('currentUser', JSON.stringify({
-        name: formData.nome,
-        email: formData.email,
-        phone: formData.celular,
-        tipoUsuario: 'Entregador',
-        endereco: `${formData.logradouro}, ${formData.numero} - ${formData.bairro}, ${formData.cidade}/${formData.estado}`
-      }));
-      
-      navigate('/cadastrosucesso');
+      // Última etapa - enviar dados para webhook
+      enviarDadosWebhook();
     }
   };
 
@@ -616,16 +707,24 @@ const UsuarioTipoPonto = () => {
               variant="outline"
               onClick={handleBack}
               className="flex-1"
+              disabled={isSubmitting}
             >
               Voltar
             </Button>
           )}
           <Button
             onClick={handleNext}
-            disabled={!canProceed()}
+            disabled={!canProceed() || isSubmitting}
             className="flex-1 bg-purple-600 hover:bg-purple-700"
           >
-            {currentStep === 6 ? 'Finalizar' : 'Próximo'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Finalizando...
+              </>
+            ) : (
+              currentStep === 6 ? 'Finalizar' : 'Próximo'
+            )}
           </Button>
         </div>
       </motion.div>
