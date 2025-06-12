@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
@@ -9,20 +8,32 @@ const Home2 = () => {
   const [userName, setUserName] = useState('Usuário');
 
   useEffect(() => {
+    // Verifica se o usuário está logado
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (!isLoggedIn || isLoggedIn !== 'true') {
+      navigate('/auth');
+      return;
+    }
+
     // Recupera o nome do usuário do localStorage
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
-      const userData = JSON.parse(currentUser);
-      setUserName(userData.name || 'Usuário');
+      try {
+        const userData = JSON.parse(currentUser);
+        setUserName(userData.name || userData.username || 'Usuário');
+      } catch (error) {
+        console.error('Erro ao processar dados do usuário:', error);
+        setUserName('Usuário');
+      }
     }
-  }, []);
+  }, [navigate]);
 
   const handleReceber = () => {
-    navigate('/bipagem?contexto=receber');
+    navigate('/receber');
   };
 
   const handleEntregar = () => {
-    navigate('/bipagem?contexto=transferencia');
+    navigate('/transferir');
   };
 
   // Dados do dashboard (mesmo do estoque)
@@ -59,7 +70,9 @@ const Home2 = () => {
               <div className="w-6 h-0.5 bg-white"></div>
             </button>
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold">LA</span>
+              <span className="text-white font-semibold">
+                {userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              </span>
             </div>
           </div>
 

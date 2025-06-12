@@ -9,20 +9,32 @@ const Index = () => {
   const [userName, setUserName] = useState('Usuário');
 
   useEffect(() => {
+    // Verifica se o usuário está logado
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (!isLoggedIn || isLoggedIn !== 'true') {
+      navigate('/auth');
+      return;
+    }
+
     // Recupera o nome do usuário do localStorage
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
-      const userData = JSON.parse(currentUser);
-      setUserName(userData.name || 'Usuário');
+      try {
+        const userData = JSON.parse(currentUser);
+        setUserName(userData.name || userData.username || 'Usuário');
+      } catch (error) {
+        console.error('Erro ao processar dados do usuário:', error);
+        setUserName('Usuário');
+      }
     }
-  }, []);
+  }, [navigate]);
 
   const handleReceber = () => {
-    navigate('/bipagem?contexto=receber');
+    navigate('/receber');
   };
 
   const handleEntregar = () => {
-    navigate('/bipagem?contexto=transferencia');
+    navigate('/transferir');
   };
 
   return (

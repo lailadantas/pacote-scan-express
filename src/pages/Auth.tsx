@@ -5,11 +5,12 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,29 +19,83 @@ const Auth = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Limpa o erro quando o usuário começa a digitar
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (!formData.email) {
+      setError('Por favor, insira seu e-mail');
+      return false;
+    }
+    if (!formData.password) {
+      setError('Por favor, insira sua senha');
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setError('Por favor, insira um e-mail válido');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
+    setError('');
     
-    // Simular loading
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Para login, verifica se existe usuário salvo
-    const savedUser = localStorage.getItem('userData');
-    if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      localStorage.setItem('isLoggedIn', 'true');
-      navigate('/home');
-    } else {
-      // Se não existe usuário, cria um com dados básicos
-      const userData = { name: 'Usuário', email: formData.email };
-      localStorage.setItem('userData', JSON.stringify(userData));
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      localStorage.setItem('isLoggedIn', 'true');
-      navigate('/home');
+    try {
+      const response = await fetch('https://api.smartenvios.tec.br/core/auth/cms/login/v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTYwMzY4NjcsImlhdCI6MTcxNTk1MDQ2Nywic3ViIjp7ImlkIjoiNWE5YTAwYWMtNjQ5NS00OGM1LThkODgtMjFiMDI4ZjU0ODc2In0sImN1c3RvbWVycyI6W119.9ZipvgJ5x_7dov6JMyeg_PK5VcIjJWP2QLDXn6dtf70'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Login bem-sucedido
+        const userData = {
+          name: data.user?.name || data.name || 'Usuário',
+          email: formData.email,
+          token: data.token || data.access_token,
+          ...data.user
+        };
+        
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('authToken', userData.token);
+        
+        navigate('/home');
+      } else {
+        // Trata diferentes tipos de erro
+        if (response.status === 401) {
+          setError('E-mail ou senha incorretos. Verifique suas credenciais.');
+        } else if (response.status === 422) {
+          setError('Dados inválidos. Verifique o formato do e-mail e senha.');
+        } else if (response.status >= 500) {
+          setError('Erro no servidor. Tente novamente em alguns instantes.');
+        } else {
+          setError(data.message || 'Erro ao fazer login. Tente novamente.');
+        }
+      }
+    } catch (error) {
+      console.error('Erro de conexão:', error);
+      setError('Erro de conexão. Verifique sua internet e tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,6 +144,18 @@ const Auth = () => {
           <h1 className="text-2xl font-bold text-gray-800">ExpediApp</h1>
           <p className="text-gray-600">Entre na sua conta</p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2"
+          >
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+            <span className="text-red-700 text-sm">{error}</span>
+          </motion.div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -140,8 +207,15 @@ const Auth = () => {
             </button>
           </div>
 
-          <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
-            Entrar
+          <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Entrando...
+              </>
+            ) : (
+              'Entrar'
+            )}
           </Button>
         </form>
 
@@ -150,6 +224,7 @@ const Auth = () => {
           onClick={handleGoogleLogin}
           variant="outline"
           className="w-full flex items-center justify-center space-x-2 mt-4"
+          disabled={isLoading}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
