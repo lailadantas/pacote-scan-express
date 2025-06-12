@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +20,7 @@ const Index = () => {
     if (currentUser) {
       try {
         const userData = JSON.parse(currentUser);
-        setUserName(userData.name || userData.username || 'Usuário');
+        setUserName(userData.person_name || userData.name || userData.username || 'Usuário');
       } catch (error) {
         console.error('Erro ao processar dados do usuário:', error);
         setUserName('Usuário');
