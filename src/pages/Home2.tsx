@@ -20,7 +20,8 @@ const Home2 = () => {
     if (currentUser) {
       try {
         const userData = JSON.parse(currentUser);
-        setUserName(userData.name || userData.username || 'Usuário');
+        console.log('Dados do usuário no Home2:', userData); // Para debug
+        setUserName(userData.person_name || userData.name || userData.username || 'Usuário');
       } catch (error) {
         console.error('Erro ao processar dados do usuário:', error);
         setUserName('Usuário');

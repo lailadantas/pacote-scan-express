@@ -20,6 +20,7 @@ const Index = () => {
     if (currentUser) {
       try {
         const userData = JSON.parse(currentUser);
+        console.log('Dados do usuário:', userData); // Para debug
         setUserName(userData.person_name || userData.name || userData.username || 'Usuário');
       } catch (error) {
         console.error('Erro ao processar dados do usuário:', error);

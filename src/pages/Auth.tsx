@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -67,10 +66,13 @@ const Auth = () => {
       if (response.ok) {
         // Login bem-sucedido
         const userData = {
-          name: data.user?.name || data.name || 'Usuário',
+          person_name: data.result.user.person_name,
+          name: data.result.user.person_name || data.result.user.name || 'Usuário',
           email: formData.email,
-          token: data.token || data.access_token,
-          ...data.user
+          token: data.result.token,
+          user_id: data.result.user.id,
+          person_id: data.result.user.person_id,
+          ...data.result.user
         };
         
         localStorage.setItem('userData', JSON.stringify(userData));
