@@ -1,7 +1,5 @@
 
 import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 
 interface Package3DProps {
   position: [number, number, number];
@@ -11,23 +9,29 @@ interface Package3DProps {
 }
 
 const Package3D = ({ position, scale = 1, color = '#8B5CF6', animated = true }: Package3DProps) => {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const divRef = useRef<HTMLDivElement>(null);
 
-  useFrame((state) => {
-    if (meshRef.current && animated) {
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.1;
-      meshRef.current.rotation.y += 0.01;
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.1;
-    }
-  });
-
+  // Simple 2D representation instead of 3D
   return (
-    <group position={position}>
-      <mesh ref={meshRef} castShadow receiveShadow>
-        <boxGeometry args={[scale, scale, scale]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-    </group>
+    <div 
+      ref={divRef}
+      className="relative w-16 h-16 mx-auto"
+      style={{
+        transform: `scale(${scale})`,
+        animation: animated ? 'float 2s ease-in-out infinite' : 'none'
+      }}
+    >
+      <div 
+        className="w-full h-full rounded-lg shadow-lg"
+        style={{ backgroundColor: color }}
+      />
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
+    </div>
   );
 };
 

@@ -1,12 +1,8 @@
-
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-import Package3D from '@/components/Package3D';
 
 const OnboardingScene1 = () => (
   <div className="w-full h-[300px] flex items-center justify-center">
