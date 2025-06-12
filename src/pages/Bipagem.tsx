@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
@@ -7,12 +6,8 @@ import BarcodeScanner from '@/components/BarcodeScanner';
 import { ScanLine } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
-
-interface Pacote {
-  id: string;
-  codigo: string;
-  status: 'bipado';
-}
+import { useFreightTracking } from '@/hooks/useFreightTracking';
+import { Pacote } from '@/types/Pacote';
 
 const Bipagem = () => {
   const navigate = useNavigate();
@@ -21,6 +16,7 @@ const Bipagem = () => {
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
   const { playSuccessBeep, playErrorBeep } = useBeepSounds();
+  const { validateFreightOrder } = useFreightTracking();
 
   // Detectar contexto
   const contexto = searchParams.get('contexto');
@@ -39,13 +35,13 @@ const Bipagem = () => {
     return "Bipagem de itens";
   };
 
-  const handleCodeDetected = (code: string) => {
+  const handleCodeDetected = async (code: string) => {
     console.log('Código detectado:', code);
     
     // Verifica se o código já foi bipado na lista atual
     const existingPacote = pacotes.find(p => p.codigo === code);
     if (existingPacote) {
-      playErrorBeep(); // Som de erro para item duplicado
+      playErrorBeep();
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'erro', 
@@ -57,18 +53,27 @@ const Bipagem = () => {
       return;
     }
 
-    // Simula validação do código (70% chance de sucesso)
-    const isSuccess = Math.random() > 0.3;
+    // Valida o código via API
+    const trackingResult = await validateFreightOrder(code);
     
-    if (isSuccess) {
-      playSuccessBeep(); // Som de sucesso
+    if (trackingResult.success) {
+      playSuccessBeep();
       const newPacote: Pacote = {
         id: Date.now().toString(),
         codigo: code,
-        status: 'bipado'
+        status: 'validado',
+        trackingStatus: trackingResult.data
       };
       
       const updatedPacotes = [...pacotes, newPacote];
+      
+      // Registra o evento no localStorage
+      const trackingEvents = JSON.parse(localStorage.getItem('trackingEvents') || '[]');
+      trackingEvents.push({
+        ...trackingResult.data,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('trackingEvents', JSON.stringify(trackingEvents));
       
       navigate('/resultado-bipagem', { 
         state: { 
@@ -79,12 +84,29 @@ const Bipagem = () => {
         replace: true 
       });
     } else {
-      playErrorBeep(); // Som de erro para pendência
+      playErrorBeep();
+      const newPacote: Pacote = {
+        id: Date.now().toString(),
+        codigo: code,
+        status: 'erro',
+        trackingStatus: trackingResult.data
+      };
+      
+      const updatedPacotes = [...pacotes, newPacote];
+      
+      // Registra o evento mesmo com erro
+      const trackingEvents = JSON.parse(localStorage.getItem('trackingEvents') || '[]');
+      trackingEvents.push({
+        ...trackingResult.data,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('trackingEvents', JSON.stringify(trackingEvents));
+      
       navigate('/resultado-bipagem', { 
         state: { 
           resultado: 'pendencia', 
           codigo: code,
-          pacotes: pacotes
+          pacotes: updatedPacotes
         },
         replace: true 
       });
@@ -112,10 +134,8 @@ const Bipagem = () => {
     }
     
     if (isColeta) {
-      // Se é coleta, vai para a tela de assinatura
       navigate(`/assinatura-coleta/${pontoId}`);
     } else {
-      // Para outros contextos, vai para EscolherTipo
       navigate('/escolhertipo', { 
         state: { pacotes } 
       });
