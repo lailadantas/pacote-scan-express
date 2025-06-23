@@ -27,7 +27,8 @@ export const useFreightTracking = () => {
       
       const token = userData.token;
       console.log('Token extraído:', token ? 'Token encontrado' : 'Token não encontrado');
-      console.log('Token (primeiros 50 chars):', token ? token.substring(0, 50) + '...' : 'null');
+      console.log('Token length:', token ? token.length : 0);
+      console.log('Token completo:', token);
 
       if (!token) {
         console.error('Token não encontrado no localStorage');
@@ -48,7 +49,7 @@ export const useFreightTracking = () => {
       
       console.log('URL da API:', 'https://api.smartenvios.tec.br/core/cms/freight-order-trackings');
       console.log('Request body:', requestBody);
-      console.log('Authorization header:', `Bearer ${token.substring(0, 20)}...`);
+      console.log('Authorization header completo:', `Bearer ${token}`);
 
       const response = await fetch('https://api.smartenvios.tec.br/core/cms/freight-order-trackings', {
         method: 'POST',
