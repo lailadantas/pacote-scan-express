@@ -25,7 +25,7 @@ const Package3D = ({ position, scale = 1, color = '#8B5CF6', animated = true }: 
         className="w-full h-full rounded-lg shadow-lg"
         style={{ backgroundColor: color }}
       />
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-10px); }
