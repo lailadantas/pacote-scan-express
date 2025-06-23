@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 
 interface TrackingResponse {
@@ -16,10 +17,12 @@ interface WebhookResponse {
   message?: string;
 }
 
+// Cache global para evitar requisições duplicadas entre diferentes instâncias do hook
+const globalCache = new Map<string, TrackingResponse>();
+const globalPendingRequests = new Map<string, Promise<TrackingResponse>>();
+
 export const useFreightTracking = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const cacheRef = useRef<Map<string, TrackingResponse>>(new Map());
-  const pendingRequestsRef = useRef<Map<string, Promise<TrackingResponse>>>(new Map());
 
   const getFreightOrderId = async (code: string): Promise<WebhookResponse> => {
     console.log('=== INÍCIO DO WEBHOOK N8N ===');
@@ -40,7 +43,6 @@ export const useFreightTracking = () => {
         const data = await response.json();
         console.log('Webhook response data:', data);
         
-        // Se a resposta é um array, pegar o primeiro item
         const responseData = Array.isArray(data) ? data[0] : data;
         
         return {
@@ -91,8 +93,6 @@ export const useFreightTracking = () => {
       const token = userData.token;
       
       console.log('Token extraído:', token ? 'Token encontrado' : 'Token não encontrado');
-      console.log('Token length:', token ? token.length : 0);
-      console.log('Token completo:', token);
 
       if (!token) {
         console.error('Token não encontrado no localStorage');
@@ -111,9 +111,7 @@ export const useFreightTracking = () => {
         freight_order_id: freightOrderId
       };
       
-      console.log('URL da API:', 'https://api.smartenvios.tec.br/core/cms/freight-order-trackings');
-      console.log('Request body:', requestBody);
-      console.log('Authorization header completo:', `Bearer ${token}`);
+      console.log('Request body para API SmartEnvios:', requestBody);
 
       const response = await fetch('https://api.smartenvios.tec.br/core/cms/freight-order-trackings', {
         method: 'POST',
@@ -125,8 +123,7 @@ export const useFreightTracking = () => {
         body: JSON.stringify(requestBody),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Response status da API SmartEnvios:', response.status);
 
       if (response.ok) {
         const data = await response.json();
@@ -158,7 +155,6 @@ export const useFreightTracking = () => {
       }
     } catch (error) {
       console.error('Erro ao validar freight order:', error);
-      console.error('Stack trace:', error instanceof Error ? error.stack : 'Sem stack trace');
       
       return {
         success: false,
@@ -173,37 +169,38 @@ export const useFreightTracking = () => {
   };
 
   const validateFreightOrder = async (code: string): Promise<TrackingResponse> => {
-    // Verificar se já existe no cache
-    if (cacheRef.current.has(code)) {
-      console.log('Retornando dados do cache para:', code);
-      return cacheRef.current.get(code)!;
+    console.log('=== VALIDAÇÃO INICIADA PARA CÓDIGO ===', code);
+    
+    // Verificar se já existe no cache global
+    if (globalCache.has(code)) {
+      console.log('Retornando dados do cache global para:', code);
+      return globalCache.get(code)!;
     }
 
     // Verificar se já existe uma requisição pendente para este código
-    if (pendingRequestsRef.current.has(code)) {
-      console.log('Aguardando requisição pendente para:', code);
-      return pendingRequestsRef.current.get(code)!;
+    if (globalPendingRequests.has(code)) {
+      console.log('Aguardando requisição pendente global para:', code);
+      return await globalPendingRequests.get(code)!;
     }
 
-    console.log('=== INÍCIO DO TRACKING COMPLETO ===');
-    console.log('Código original:', code);
-    
+    console.log('Iniciando nova requisição para:', code);
     setIsLoading(true);
     
-    // Criar a promise e armazenar como pendente
+    // Criar a promise e armazenar como pendente globalmente
     const trackingPromise = executeTracking(code);
-    pendingRequestsRef.current.set(code, trackingPromise);
+    globalPendingRequests.set(code, trackingPromise);
     
     try {
       const result = await trackingPromise;
-      // Armazenar no cache
-      cacheRef.current.set(code, result);
+      // Armazenar no cache global
+      globalCache.set(code, result);
+      console.log('Resultado armazenado no cache para:', code);
       return result;
     } finally {
-      // Remover da lista de pendentes
-      pendingRequestsRef.current.delete(code);
+      // Remover da lista de pendentes globais
+      globalPendingRequests.delete(code);
       setIsLoading(false);
-      console.log('=== FIM DO TRACKING COMPLETO ===');
+      console.log('=== VALIDAÇÃO FINALIZADA PARA CÓDIGO ===', code);
     }
   };
 
