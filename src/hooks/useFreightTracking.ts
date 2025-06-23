@@ -11,21 +11,86 @@ interface TrackingResponse {
   };
 }
 
+interface WebhookResponse {
+  success: boolean;
+  freight_order_id?: string;
+  message?: string;
+}
+
 export const useFreightTracking = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateFreightOrder = async (freightOrderId: string): Promise<TrackingResponse> => {
-    console.log('=== INÍCIO DO TRACKING ===');
-    console.log('Freight Order ID:', freightOrderId);
+  const getFreightOrderId = async (code: string): Promise<WebhookResponse> => {
+    console.log('=== INÍCIO DO WEBHOOK N8N ===');
+    console.log('Código para webhook:', code);
+    
+    try {
+      const response = await fetch('https://n8n.smartenvios.com/webhook/e4842cb5-8b7d-47ae-9328-f775ebb46883', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      console.log('Webhook response status:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Webhook response data:', data);
+        
+        return {
+          success: true,
+          freight_order_id: data.freight_order_id,
+        };
+      } else {
+        console.error('Webhook error response:', response.status);
+        return {
+          success: false,
+          message: `Webhook error: ${response.status}`,
+        };
+      }
+    } catch (error) {
+      console.error('Webhook request error:', error);
+      return {
+        success: false,
+        message: 'Erro de conexão com webhook',
+      };
+    } finally {
+      console.log('=== FIM DO WEBHOOK N8N ===');
+    }
+  };
+
+  const validateFreightOrder = async (code: string): Promise<TrackingResponse> => {
+    console.log('=== INÍCIO DO TRACKING COMPLETO ===');
+    console.log('Código original:', code);
     
     setIsLoading(true);
     
     try {
-      // Get token from logged user data
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      console.log('userData completo:', userData);
+      // Primeiro, obter o freight_order_id do webhook
+      const webhookResult = await getFreightOrderId(code);
       
+      if (!webhookResult.success || !webhookResult.freight_order_id) {
+        console.error('Falha ao obter freight_order_id:', webhookResult.message);
+        return {
+          success: false,
+          data: {
+            freight_order: code,
+            code_status: "3",
+            observation: webhookResult.message || "Erro ao obter freight_order_id",
+            date_event: new Date().toISOString().replace('T', ' ').substring(0, 19)
+          }
+        };
+      }
+
+      const freightOrderId = webhookResult.freight_order_id;
+      console.log('freight_order_id obtido:', freightOrderId);
+
+      // Agora consultar o status usando o freight_order_id
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const token = userData.token;
+      
       console.log('Token extraído:', token ? 'Token encontrado' : 'Token não encontrado');
       console.log('Token length:', token ? token.length : 0);
       console.log('Token completo:', token);
@@ -35,7 +100,7 @@ export const useFreightTracking = () => {
         return {
           success: false,
           data: {
-            freight_order: freightOrderId,
+            freight_order: code,
             code_status: "3",
             observation: "Token não encontrado - usando dados mock",
             date_event: new Date().toISOString().replace('T', ' ').substring(0, 19)
@@ -71,7 +136,7 @@ export const useFreightTracking = () => {
         return {
           success: true,
           data: {
-            freight_order: freightOrderId,
+            freight_order: code,
             code_status: data.code_status || "3",
             observation: data.observation || "Em transferência da unidade CD SME 01 para CD SME 05",
             date_event: data.date_event || new Date().toISOString().replace('T', ' ').substring(0, 19)
@@ -85,7 +150,7 @@ export const useFreightTracking = () => {
         return {
           success: false,
           data: {
-            freight_order: freightOrderId,
+            freight_order: code,
             code_status: "3",
             observation: `Erro na API (${response.status}) - usando dados mock`,
             date_event: new Date().toISOString().replace('T', ' ').substring(0, 19)
@@ -99,7 +164,7 @@ export const useFreightTracking = () => {
       return {
         success: false,
         data: {
-          freight_order: freightOrderId,
+          freight_order: code,
           code_status: "3",
           observation: "Erro de conexão - usando dados mock",
           date_event: new Date().toISOString().replace('T', ' ').substring(0, 19)
@@ -107,7 +172,7 @@ export const useFreightTracking = () => {
       };
     } finally {
       setIsLoading(false);
-      console.log('=== FIM DO TRACKING ===');
+      console.log('=== FIM DO TRACKING COMPLETO ===');
     }
   };
 
