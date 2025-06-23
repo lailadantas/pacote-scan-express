@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 interface TrackingResponse {
   success: boolean;
@@ -19,6 +19,8 @@ interface WebhookResponse {
 
 export const useFreightTracking = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const cacheRef = useRef<Map<string, TrackingResponse>>(new Map());
+  const pendingRequestsRef = useRef<Map<string, Promise<TrackingResponse>>>(new Map());
 
   const getFreightOrderId = async (code: string): Promise<WebhookResponse> => {
     console.log('=== INÍCIO DO WEBHOOK N8N ===');
@@ -39,9 +41,12 @@ export const useFreightTracking = () => {
         const data = await response.json();
         console.log('Webhook response data:', data);
         
+        // Se a resposta é um array, pegar o primeiro item
+        const responseData = Array.isArray(data) ? data[0] : data;
+        
         return {
           success: true,
-          freight_order_id: data.freight_order_id,
+          freight_order_id: responseData.freight_order_id,
         };
       } else {
         console.error('Webhook error response:', response.status);
@@ -62,11 +67,41 @@ export const useFreightTracking = () => {
   };
 
   const validateFreightOrder = async (code: string): Promise<TrackingResponse> => {
+    // Verificar se já existe no cache
+    if (cacheRef.current.has(code)) {
+      console.log('Retornando dados do cache para:', code);
+      return cacheRef.current.get(code)!;
+    }
+
+    // Verificar se já existe uma requisição pendente para este código
+    if (pendingRequestsRef.current.has(code)) {
+      console.log('Aguardando requisição pendente para:', code);
+      return pendingRequestsRef.current.get(code)!;
+    }
+
     console.log('=== INÍCIO DO TRACKING COMPLETO ===');
     console.log('Código original:', code);
     
     setIsLoading(true);
     
+    // Criar a promise e armazenar como pendente
+    const trackingPromise = this.executeTracking(code);
+    pendingRequestsRef.current.set(code, trackingPromise);
+    
+    try {
+      const result = await trackingPromise;
+      // Armazenar no cache
+      cacheRef.current.set(code, result);
+      return result;
+    } finally {
+      // Remover da lista de pendentes
+      pendingRequestsRef.current.delete(code);
+      setIsLoading(false);
+      console.log('=== FIM DO TRACKING COMPLETO ===');
+    }
+  };
+
+  const executeTracking = async (code: string): Promise<TrackingResponse> => {
     try {
       // Primeiro, obter o freight_order_id do webhook
       const webhookResult = await getFreightOrderId(code);
@@ -170,9 +205,6 @@ export const useFreightTracking = () => {
           date_event: new Date().toISOString().replace('T', ' ').substring(0, 19)
         }
       };
-    } finally {
-      setIsLoading(false);
-      console.log('=== FIM DO TRACKING COMPLETO ===');
     }
   };
 
