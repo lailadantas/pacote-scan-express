@@ -18,11 +18,7 @@ export const useFreightTracking = () => {
     setIsLoading(true);
     
     try {
-      const token = localStorage.getItem('userToken');
-      
-      if (!token) {
-        throw new Error('Token não encontrado');
-      }
+      const token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTA3ODAxOTYsImlhdCI6MTc1MDY5Mzc5Niwic3ViIjp7ImlkIjoiZDI1Y2VjOWMtMGMxNS00OTNlLWI3YTYtN2UyNmI3ZWYyYzlmIn0sImN1c3RvbWVycyI6W119.22yk6SK2OMFNBpIDK5Kfdy-5qy538Bux9_4tRFgvc9w';
 
       const response = await fetch('https://api.smartenvios.com/v1/freight-order/tracking', {
         method: 'POST',
