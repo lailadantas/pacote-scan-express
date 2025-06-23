@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Package, ChevronUp, ChevronDown, Check, Trash2, ChevronRight, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +21,7 @@ const PacotesBipados = ({ pacotes, onRemovePacote }: PacotesBipadosProps) => {
       setSelectedPacote(pacote);
       setIsModalOpen(true);
     } else {
-      navigate(`/estoque/detalhes/${pacote.id}`);
+      navigate(`/estoque/detalhes/${pacote.codigo}`);
     }
   };
 

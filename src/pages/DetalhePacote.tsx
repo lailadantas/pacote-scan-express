@@ -11,7 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { useFreightTracking } from '@/hooks/useFreightTracking';
 
 const DetalhePacote = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // id agora é o código do pacote
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -19,14 +19,14 @@ const DetalhePacote = () => {
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
   const { validateFreightOrder } = useFreightTracking();
 
-  // Get package data from localStorage
+  // Get package data from localStorage using the code
   const userStock = JSON.parse(localStorage.getItem('userStock') || '[]');
-  const pacote = userStock.find((p: any) => p.id === id);
+  const pacote = userStock.find((p: any) => p.codigo === id);
 
-  // If package not found, show default mock data
+  // If package not found, show default mock data using the code from URL
   const pacoteData = pacote || {
     id: id,
-    codigo: `PKG0${id?.padStart(2, '0')}`,
+    codigo: id, // Use the code from URL
     status: 'Bipado',
     destinatario: 'João Silva Santos',
     telefone: '(11) 99999-9999',
@@ -48,9 +48,11 @@ const DetalhePacote = () => {
   useEffect(() => {
     const fetchTrackingData = async () => {
       if (pacoteData.codigo) {
+        console.log('Buscando dados de rastreamento para:', pacoteData.codigo);
         setIsLoadingTracking(true);
         try {
           const result = await validateFreightOrder(pacoteData.codigo);
+          console.log('Resultado do rastreamento:', result);
           setTrackingData(result.data);
         } catch (error) {
           console.error('Erro ao buscar dados de rastreamento:', error);
@@ -65,9 +67,9 @@ const DetalhePacote = () => {
 
   const handleSave = () => {
     if (pacote) {
-      // Update existing package in localStorage
+      // Update existing package in localStorage using codigo
       const updatedStock = userStock.map((p: any) => 
-        p.id === id ? { ...p, ...editData } : p
+        p.codigo === id ? { ...p, ...editData } : p
       );
       localStorage.setItem('userStock', JSON.stringify(updatedStock));
     }
@@ -81,8 +83,8 @@ const DetalhePacote = () => {
 
   const handleDelete = () => {
     if (pacote) {
-      // Remove package from localStorage
-      const updatedStock = userStock.filter((p: any) => p.id !== id);
+      // Remove package from localStorage using codigo
+      const updatedStock = userStock.filter((p: any) => p.codigo !== id);
       localStorage.setItem('userStock', JSON.stringify(updatedStock));
       
       toast({
