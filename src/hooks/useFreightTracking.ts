@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 
 interface TrackingResponse {
@@ -63,41 +62,6 @@ export const useFreightTracking = () => {
       };
     } finally {
       console.log('=== FIM DO WEBHOOK N8N ===');
-    }
-  };
-
-  const validateFreightOrder = async (code: string): Promise<TrackingResponse> => {
-    // Verificar se já existe no cache
-    if (cacheRef.current.has(code)) {
-      console.log('Retornando dados do cache para:', code);
-      return cacheRef.current.get(code)!;
-    }
-
-    // Verificar se já existe uma requisição pendente para este código
-    if (pendingRequestsRef.current.has(code)) {
-      console.log('Aguardando requisição pendente para:', code);
-      return pendingRequestsRef.current.get(code)!;
-    }
-
-    console.log('=== INÍCIO DO TRACKING COMPLETO ===');
-    console.log('Código original:', code);
-    
-    setIsLoading(true);
-    
-    // Criar a promise e armazenar como pendente
-    const trackingPromise = this.executeTracking(code);
-    pendingRequestsRef.current.set(code, trackingPromise);
-    
-    try {
-      const result = await trackingPromise;
-      // Armazenar no cache
-      cacheRef.current.set(code, result);
-      return result;
-    } finally {
-      // Remover da lista de pendentes
-      pendingRequestsRef.current.delete(code);
-      setIsLoading(false);
-      console.log('=== FIM DO TRACKING COMPLETO ===');
     }
   };
 
@@ -205,6 +169,41 @@ export const useFreightTracking = () => {
           date_event: new Date().toISOString().replace('T', ' ').substring(0, 19)
         }
       };
+    }
+  };
+
+  const validateFreightOrder = async (code: string): Promise<TrackingResponse> => {
+    // Verificar se já existe no cache
+    if (cacheRef.current.has(code)) {
+      console.log('Retornando dados do cache para:', code);
+      return cacheRef.current.get(code)!;
+    }
+
+    // Verificar se já existe uma requisição pendente para este código
+    if (pendingRequestsRef.current.has(code)) {
+      console.log('Aguardando requisição pendente para:', code);
+      return pendingRequestsRef.current.get(code)!;
+    }
+
+    console.log('=== INÍCIO DO TRACKING COMPLETO ===');
+    console.log('Código original:', code);
+    
+    setIsLoading(true);
+    
+    // Criar a promise e armazenar como pendente
+    const trackingPromise = executeTracking(code);
+    pendingRequestsRef.current.set(code, trackingPromise);
+    
+    try {
+      const result = await trackingPromise;
+      // Armazenar no cache
+      cacheRef.current.set(code, result);
+      return result;
+    } finally {
+      // Remover da lista de pendentes
+      pendingRequestsRef.current.delete(code);
+      setIsLoading(false);
+      console.log('=== FIM DO TRACKING COMPLETO ===');
     }
   };
 
