@@ -1,19 +1,23 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Package, MapPin, User, Calendar, Clock, Edit, Trash2 } from 'lucide-react';
+import { Package, MapPin, User, Calendar, Clock, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import { useFreightTracking } from '@/hooks/useFreightTracking';
 
 const DetalhePacote = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [trackingData, setTrackingData] = useState<any>(null);
+  const [isLoadingTracking, setIsLoadingTracking] = useState(false);
+  const { validateFreightOrder } = useFreightTracking();
 
   // Get package data from localStorage
   const userStock = JSON.parse(localStorage.getItem('userStock') || '[]');
@@ -39,6 +43,25 @@ const DetalhePacote = () => {
   };
 
   const [editData, setEditData] = useState(pacoteData);
+
+  // Fetch tracking data when component mounts
+  useEffect(() => {
+    const fetchTrackingData = async () => {
+      if (pacoteData.codigo) {
+        setIsLoadingTracking(true);
+        try {
+          const result = await validateFreightOrder(pacoteData.codigo);
+          setTrackingData(result.data);
+        } catch (error) {
+          console.error('Erro ao buscar dados de rastreamento:', error);
+        } finally {
+          setIsLoadingTracking(false);
+        }
+      }
+    };
+
+    fetchTrackingData();
+  }, [pacoteData.codigo, validateFreightOrder]);
 
   const handleSave = () => {
     if (pacote) {
@@ -78,6 +101,36 @@ const DetalhePacote = () => {
       case 'Em rota': return 'text-green-600 bg-green-50';
       case 'Bipado': return 'text-purple-600 bg-purple-50';
       default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getTrackingStatusLabel = (code: string) => {
+    switch (code) {
+      case '1':
+        return 'Coletado';
+      case '2':
+        return 'Em trânsito';
+      case '3':
+        return 'Em transferência';
+      case '4':
+        return 'Entregue';
+      default:
+        return 'Status desconhecido';
+    }
+  };
+
+  const getTrackingStatusColor = (code: string) => {
+    switch (code) {
+      case '1':
+        return 'bg-blue-100 text-blue-800';
+      case '2':
+        return 'bg-yellow-100 text-yellow-800';
+      case '3':
+        return 'bg-orange-100 text-orange-800';
+      case '4':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -206,6 +259,44 @@ const DetalhePacote = () => {
               <span className="font-medium ml-2">{editData.dimensoes}</span>
             </div>
           </div>
+        </div>
+
+        {/* Status de Rastreamento */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="flex items-center space-x-3 mb-4">
+            <Package className="w-5 h-5 text-gray-500" />
+            <h3 className="font-semibold text-gray-900">Status de Rastreamento</h3>
+          </div>
+          
+          {isLoadingTracking ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <span className="ml-2 text-gray-500">Carregando informações...</span>
+            </div>
+          ) : trackingData ? (
+            <div className="space-y-3">
+              <div>
+                <span className="text-gray-500">Status:</span>
+                <Badge className={`ml-2 ${getTrackingStatusColor(trackingData.code_status)}`}>
+                  {getTrackingStatusLabel(trackingData.code_status)}
+                </Badge>
+              </div>
+              <div>
+                <span className="text-gray-500">Observação:</span>
+                <p className="text-sm text-gray-700 mt-1 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  {trackingData.observation}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-500">Última atualização:</span>
+                <span className="font-medium ml-2">{new Date(trackingData.date_event).toLocaleString('pt-BR')}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-gray-500 text-sm">Não foi possível carregar as informações de rastreamento</p>
+            </div>
+          )}
         </div>
 
         {/* Informações do destinatário */}
