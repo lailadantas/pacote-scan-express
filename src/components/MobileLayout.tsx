@@ -1,8 +1,7 @@
 
 import { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, MapPin, Package, MessageCircle, DollarSign, User, LogOut } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ArrowLeft, User, LogOut } from 'lucide-react';
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -48,41 +47,6 @@ const MobileLayout = ({
     navigate('/auth');
   };
 
-  // Função para verificar se está na área de serviços
-  const isServicosArea = () => {
-    const servicosRoutes = [
-      '/servicos',
-      '/meusservicos',
-      '/detalhedoservico',
-      '/rotaemandamento',
-      '/detalhedoponto',
-      '/entregar',
-      '/dadosrecebedor',
-      '/entregasucesso',
-      '/naopudeentregar',
-      '/motivoentrega',
-      '/coletar',
-      '/dadosremetente',
-      '/coletasucesso',
-      '/naopudecoletar',
-      '/motivocoleta',
-      '/assinatura-coleta',
-      '/registrosucesso',
-      '/rotafinalizada',
-      '/finalizar-rota'
-    ];
-    
-    return servicosRoutes.some(route => location.pathname.startsWith(route));
-  };
-
-  const navItems = [
-    { icon: Home, label: 'Home', path: '/home', active: location.pathname === '/home' || location.pathname === '/' },
-    { icon: MapPin, label: 'Serviços', path: '/servicos', active: isServicosArea() },
-    { icon: Package, label: 'Estoque', path: '/estoque', active: location.pathname === '/estoque' },
-    { icon: MessageCircle, label: 'Chat', path: '/chat', active: location.pathname === '/chat' },
-    { icon: DollarSign, label: 'Financeiro', path: '/financeiro', active: location.pathname === '/financeiro' },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto">
       {/* Top Navigation */}
@@ -96,9 +60,16 @@ const MobileLayout = ({
               <ArrowLeft className="w-6 h-6 text-gray-600" />
             </button>
           )}
-          <h1 className="text-lg font-semibold text-gray-900">
-            {title || 'ExpediApp'}
-          </h1>
+          <div className="flex items-center">
+            <img 
+              src="/lovable-uploads/f3d54219-8523-4c16-a475-30845e2fd8bf.png" 
+              alt="SmartPonto" 
+              className="h-8 mr-2"
+            />
+            <h1 className="text-lg font-semibold text-gray-900">
+              {title || 'SmartPonto'}
+            </h1>
+          </div>
         </div>
         
         {showProfileMenu && (
@@ -123,29 +94,6 @@ const MobileLayout = ({
       <main className="flex-1 overflow-auto">
         {children}
       </main>
-
-      {/* Bottom Navigation */}
-      {showBottomNav && (
-        <nav className="bg-white border-t border-gray-200 px-2 py-2">
-          <div className="flex justify-around">
-            {navItems.map(({ icon: Icon, label, path, active }) => (
-              <button
-                key={path}
-                onClick={() => navigate(path)}
-                className={cn(
-                  "flex flex-col items-center py-2 px-3 rounded-lg transition-colors",
-                  active 
-                    ? "text-orange-500 bg-orange-50" 
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                <Icon className="w-5 h-5 mb-1" />
-                <span className="text-xs font-medium">{label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
     </div>
   );
 };

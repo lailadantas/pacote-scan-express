@@ -44,13 +44,13 @@ const Home2 = () => {
       title: "Serviço em execução",
       count: 1,
       icon: Settings,
-      color: "text-purple-600"
+      color: "text-[#FF4713]"
     },
     {
       title: "Pacotes comigo",
       count: 30,
       icon: Settings,
-      color: "text-purple-600"
+      color: "text-[#FF4713]"
     },
     {
       title: "Pacotes entregues",
@@ -62,7 +62,7 @@ const Home2 = () => {
 
   return (
     <MobileLayout title="Início" showBottomNav={false} showProfileMenu={true}>
-      <div className="bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 min-h-screen">
+      <div className="bg-gradient-to-br from-[#FF4713] via-[#FF4713] to-[#FF4713] min-h-screen">
         {/* Header */}
         <div className="p-4 pb-6">
           <div className="flex items-center justify-between mb-6">
@@ -106,14 +106,14 @@ const Home2 = () => {
         <div className="bg-gray-100 rounded-t-3xl flex-1 p-4 space-y-6">
           {/* Meus Serviços */}
           <div>
-            <h2 className="text-lg font-semibold text-purple-600 mb-4">Meus Serviços</h2>
+            <h2 className="text-lg font-semibold text-[#FF4713] mb-4">Meus Serviços</h2>
             <div className="grid grid-cols-1 gap-4">
               <button 
                 onClick={() => navigate('/meusservicos')}
                 className="bg-white rounded-2xl p-4 shadow-sm"
               >
                 <div className="bg-orange-100 p-3 rounded-xl w-fit mb-3">
-                  <Settings className="w-6 h-6 text-orange-600" />
+                  <Settings className="w-6 h-6 text-[#FF4713]" />
                 </div>
                 <h3 className="font-medium text-gray-900 text-left">Meus serviços</h3>
               </button>
@@ -122,14 +122,14 @@ const Home2 = () => {
 
           {/* Ações */}
           <div>
-            <h2 className="text-lg font-semibold text-purple-600 mb-4">Ações</h2>
+            <h2 className="text-lg font-semibold text-[#FF4713] mb-4">Ações</h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <button 
                 onClick={handleReceber}
                 className="bg-white rounded-2xl p-4 shadow-sm"
               >
-                <div className="bg-purple-100 p-3 rounded-xl w-fit mb-3">
-                  <Download className="w-6 h-6 text-purple-600" />
+                <div className="bg-orange-100 p-3 rounded-xl w-fit mb-3">
+                  <Download className="w-6 h-6 text-[#FF4713]" />
                 </div>
                 <h3 className="font-medium text-gray-900 text-left">Receber</h3>
               </button>
@@ -138,8 +138,8 @@ const Home2 = () => {
                 onClick={handleEntregar}
                 className="bg-white rounded-2xl p-4 shadow-sm"
               >
-                <div className="bg-purple-100 p-3 rounded-xl w-fit mb-3">
-                  <Upload className="w-6 h-6 text-purple-600" />
+                <div className="bg-orange-100 p-3 rounded-xl w-fit mb-3">
+                  <Upload className="w-6 h-6 text-[#FF4713]" />
                 </div>
                 <h3 className="font-medium text-gray-900 text-left">Entregar</h3>
               </button>
@@ -150,69 +150,12 @@ const Home2 = () => {
               onClick={() => navigate('/bipagem')}
               className="w-full bg-white rounded-2xl p-4 shadow-sm"
             >
-              <div className="bg-purple-100 p-3 rounded-xl w-fit mb-3">
-                <ScanLine className="w-6 h-6 text-purple-600" />
+              <div className="bg-orange-100 p-3 rounded-xl w-fit mb-3">
+                <ScanLine className="w-6 h-6 text-[#FF4713]" />
               </div>
               <h3 className="font-medium text-gray-900 text-left">Iniciar bipagem</h3>
             </button>
           </div>
-        </div>
-
-        {/* Bottom Navigation */}
-        <div className="bg-white rounded-t-3xl">
-          <nav className="px-4 py-4">
-            <div className="flex justify-around">
-              <button 
-                onClick={() => navigate('/home')}
-                className="flex flex-col items-center"
-              >
-                <div className="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center mb-2">
-                  <div className="w-4 h-4 bg-purple-600 rounded"></div>
-                </div>
-                <span className="text-xs text-purple-600 font-medium">Home</span>
-              </button>
-              
-              <button 
-                onClick={() => navigate('/servicos')}
-                className="flex flex-col items-center"
-              >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2">
-                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                </div>
-                <span className="text-xs text-gray-500">Serviços</span>
-              </button>
-              
-              <button 
-                onClick={() => navigate('/estoque')}
-                className="flex flex-col items-center"
-              >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2">
-                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                </div>
-                <span className="text-xs text-gray-500">Estoque</span>
-              </button>
-              
-              <button 
-                onClick={() => navigate('/financeiro')}
-                className="flex flex-col items-center"
-              >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2">
-                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                </div>
-                <span className="text-xs text-gray-500">Financeiro</span>
-              </button>
-              
-              <button 
-                onClick={() => navigate('/chat')}
-                className="flex flex-col items-center"
-              >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2">
-                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                </div>
-                <span className="text-xs text-gray-500">Chat</span>
-              </button>
-            </div>
-          </nav>
         </div>
       </div>
     </MobileLayout>
