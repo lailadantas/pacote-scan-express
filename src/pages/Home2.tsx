@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
-import { Download, Upload, ScanLine, Tag, Settings } from 'lucide-react';
+import { Download, Upload, ScanLine, Settings } from 'lucide-react';
 
 const Home2 = () => {
   const navigate = useNavigate();
@@ -48,13 +49,13 @@ const Home2 = () => {
     {
       title: "Pacotes comigo",
       count: 30,
-      icon: Tag,
+      icon: Settings,
       color: "text-purple-600"
     },
     {
       title: "Pacotes entregues",
       count: 10,
-      icon: Tag,
+      icon: Settings,
       color: "text-green-600"
     }
   ];
@@ -103,17 +104,10 @@ const Home2 = () => {
 
         {/* Main Content */}
         <div className="bg-gray-100 rounded-t-3xl flex-1 p-4 space-y-6">
-          {/* Para você */}
+          {/* Meus Serviços */}
           <div>
-            <h2 className="text-lg font-semibold text-purple-600 mb-4">Para você</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <button className="bg-white rounded-2xl p-4 shadow-sm">
-                <div className="bg-orange-100 p-3 rounded-xl w-fit mb-3">
-                  <Tag className="w-6 h-6 text-orange-600" />
-                </div>
-                <h3 className="font-medium text-gray-900 text-left">Ofertas</h3>
-              </button>
-
+            <h2 className="text-lg font-semibold text-purple-600 mb-4">Meus Serviços</h2>
+            <div className="grid grid-cols-1 gap-4">
               <button 
                 onClick={() => navigate('/meusservicos')}
                 className="bg-white rounded-2xl p-4 shadow-sm"

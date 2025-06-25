@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
-import { ScanLine, Tag, Settings, Download, Upload } from 'lucide-react';
+import { ScanLine, Settings, Download, Upload } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -55,28 +56,19 @@ const Index = () => {
           </div>
         </button>
 
-        {/* Botões Secundários */}
-        <div className="grid grid-cols-2 gap-4">
-          <button className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all">
-            <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
-              <Tag className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <h3 className="font-medium text-sm">Ofertas</h3>
-              <h3 className="font-medium text-sm">disponíveis</h3>
-            </div>
-          </button>
-
+        {/* Botão Meus Serviços */}
+        <div className="grid grid-cols-1 gap-4">
           <button 
             onClick={() => navigate('/meusservicos')}
             className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all"
           >
-            <div className="bg-white/20 p-2 rounded-lg w-fit mb-2">
-              <Settings className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <h3 className="font-medium text-sm">Meus</h3>
-              <h3 className="font-medium text-sm">serviços</h3>
+            <div className="flex items-center">
+              <div className="bg-white/20 p-2 rounded-lg mr-4">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-medium">Meus serviços</h3>
+              </div>
             </div>
           </button>
         </div>
