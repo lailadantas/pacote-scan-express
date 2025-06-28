@@ -1,10 +1,10 @@
+
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft } from 'lucide-react';
@@ -14,26 +14,11 @@ const EscolherTipo = () => {
   const location = useLocation();
   const { pacotes = [] } = location.state || {};
   const [tipoServico, setTipoServico] = useState('');
-  const [localTransferencia, setLocalTransferencia] = useState('');
-  const [showTransferencia, setShowTransferencia] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const locaisTransferencia = [
-    'Centro de Distribuição SP',
-    'Centro de Distribuição RJ',
-    'Centro de Distribuição BH',
-    'Filial Campinas',
-    'Filial Santos',
-    'Filial Ribeirão Preto'
-  ];
-
   const handleTipoChange = (value: string) => {
     setTipoServico(value);
-    setShowTransferencia(value === 'saida');
-    if (value !== 'saida') {
-      setLocalTransferencia('');
-    }
   };
 
   const handleFinalizar = () => {
@@ -41,15 +26,6 @@ const EscolherTipo = () => {
       toast({
         title: "Selecione o tipo de serviço",
         description: "Escolha entre Entrada ou Saída",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (tipoServico === 'saida' && !localTransferencia) {
-      toast({
-        title: "Selecione o local de transferência",
-        description: "Escolha para onde os pacotes serão transferidos",
         variant: "destructive",
       });
       return;
@@ -81,7 +57,7 @@ const EscolherTipo = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
+          'Authorization': 'Basic U21hcnRQb250bzp+ZmtrVUM0NVkyI1o='
         },
         body: JSON.stringify(requestBody)
       });
@@ -171,7 +147,7 @@ const EscolherTipo = () => {
         
         toast({
           title: "Saída finalizada!",
-          description: `${pacotes.length} pacotes enviados para ${localTransferencia}`,
+          description: `${pacotes.length} pacotes processados`,
         });
         
         setShowConfirmModal(false);
@@ -249,31 +225,6 @@ const EscolherTipo = () => {
                 </Label>
               </div>
             </RadioGroup>
-
-            {showTransferencia && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                transition={{ duration: 0.3 }}
-                className="mt-4"
-              >
-                <Label className="block text-sm font-medium text-gray-700 mb-2">
-                  Local de transferência
-                </Label>
-                <Select value={localTransferencia} onValueChange={setLocalTransferencia}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione o local de destino" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locaisTransferencia.map((local) => (
-                      <SelectItem key={local} value={local}>
-                        {local}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </motion.div>
-            )}
           </div>
         </div>
       </div>
@@ -283,9 +234,9 @@ const EscolherTipo = () => {
         <div className="max-w-md mx-auto">
           <Button
             onClick={handleFinalizar}
-            disabled={!tipoServico || (tipoServico === 'saida' && !localTransferencia) || isLoading}
+            disabled={!tipoServico || isLoading}
             className={`w-full py-3 rounded-xl font-medium text-white transition-colors ${
-              tipoServico && (tipoServico !== 'saida' || localTransferencia) && !isLoading
+              tipoServico && !isLoading
                 ? 'bg-orange-500 hover:bg-orange-600'
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
@@ -303,7 +254,7 @@ const EscolherTipo = () => {
             <DialogDescription>
               {tipoServico === 'entrada' 
                 ? `Deseja realmente finalizar a entrada de ${pacotes.length} pacotes?`
-                : `Deseja realmente finalizar a saída de ${pacotes.length} pacotes para ${localTransferencia}?`
+                : `Deseja realmente finalizar a saída de ${pacotes.length} pacotes?`
               }
             </DialogDescription>
           </DialogHeader>
