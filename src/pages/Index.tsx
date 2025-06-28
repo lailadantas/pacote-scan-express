@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import MobileLayout from '@/components/MobileLayout';
+import EstoqueChart from '@/components/EstoqueChart';
 import { useNavigate } from 'react-router-dom';
 import { ScanLine, Package } from 'lucide-react';
 
@@ -33,6 +34,9 @@ const Index = () => {
   return (
     <MobileLayout title={`Olá, ${userName}!`} showProfileMenu={true} showBottomNav={false}>
       <div className="p-4 space-y-4">
+        {/* Gráfico de Volumetria */}
+        <EstoqueChart />
+
         {/* Iniciar Bipagem - Card Principal */}
         <button
           onClick={() => navigate('/bipagem')}
