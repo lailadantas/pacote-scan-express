@@ -234,12 +234,14 @@ export const useBipagemLogic = () => {
     
     const existingPacote = pacotes.find(p => p.codigo === code);
     if (existingPacote) {
+      console.log('Pacote já existe na lista, mostrando dialog de confirmação');
       playErrorBeep();
       setPendingCode(code);
       setShowDeleteDialog(true);
       return;
     }
 
+    console.log('Pacote não existe, procedendo com registro');
     const registrationSuccess = await sendToEndpoint(code, 'register');
 
     if (registrationSuccess) {
@@ -264,6 +266,7 @@ export const useBipagemLogic = () => {
   };
 
   const handleDeleteConfirm = async () => {
+    console.log('Confirmando exclusão do código:', pendingCode);
     const success = await sendToEndpoint(pendingCode, 'delete');
     
     if (success) {
@@ -275,6 +278,7 @@ export const useBipagemLogic = () => {
   };
 
   const handleDeleteCancel = () => {
+    console.log('Cancelando exclusão do código:', pendingCode);
     setShowDeleteDialog(false);
     setPendingCode('');
   };
