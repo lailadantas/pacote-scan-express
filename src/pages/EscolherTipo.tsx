@@ -58,7 +58,7 @@ const EscolherTipo = () => {
     setShowConfirmModal(true);
   };
 
-  const sendToEndpoint = async (barcodes: string[], type: string, userId?: string) => {
+  const sendToEndpoint = async (barcodes: string[], type: string, userId?: string, personId?: string) => {
     try {
       const requestBody: any = {
         type: type,
@@ -68,6 +68,11 @@ const EscolherTipo = () => {
       // Adiciona user_id se estiver disponível
       if (userId) {
         requestBody.user_id = userId;
+      }
+
+      // Adiciona person_id se estiver disponível
+      if (personId) {
+        requestBody.person_id = personId;
       }
 
       console.log('Enviando dados para o endpoint:', requestBody);
@@ -118,12 +123,14 @@ const EscolherTipo = () => {
   const confirmarAcao = async () => {
     setIsLoading(true);
 
-    // Recupera user_id do localStorage se disponível
+    // Recupera user_id e person_id do localStorage se disponível
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const userId = userData.user_id || userData.id;
+    const personId = userData.person_id;
 
     console.log('Dados do usuário:', userData);
     console.log('User ID encontrado:', userId);
+    console.log('Person ID encontrado:', personId);
 
     if (tipoServico === 'entrada') {
       // Extrai os códigos dos pacotes
@@ -131,7 +138,7 @@ const EscolherTipo = () => {
       console.log('Códigos para entrada:', barcodes);
       
       // Envia para o endpoint com type "recepcion"
-      const success = await sendToEndpoint(barcodes, 'recepcion', userId);
+      const success = await sendToEndpoint(barcodes, 'recepcion', userId, personId);
       
       if (success) {
         // Adiciona ao estoque local
@@ -153,7 +160,7 @@ const EscolherTipo = () => {
       console.log('Códigos para saída:', barcodes);
       
       // Envia para o endpoint com type "salida"
-      const success = await sendToEndpoint(barcodes, 'salida', userId);
+      const success = await sendToEndpoint(barcodes, 'salida', userId, personId);
       
       if (success) {
         // Remove do estoque local

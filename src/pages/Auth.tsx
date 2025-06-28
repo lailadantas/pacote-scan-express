@@ -76,6 +76,8 @@ const Auth = () => {
           ...data.result.user
         };
         
+        console.log('Dados salvos no localStorage:', userData);
+        
         localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('currentUser', JSON.stringify(userData));
         localStorage.setItem('isLoggedIn', 'true');
