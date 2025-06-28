@@ -36,6 +36,8 @@ const MobileLayout = ({
       navigate('/home');
     } else if (location.pathname === '/bipagem') {
       navigate('/home');
+    } else if (location.pathname === '/estoque') {
+      navigate('/home');
     } else {
       navigate(-1);
     }

@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 import MobileLayout from '@/components/MobileLayout';
 import { useNavigate } from 'react-router-dom';
-import { Package, PackageCheck, PackageMinus, PackageOpen, ChevronRight } from 'lucide-react';
+import { Package, PackageCheck, PackageMinus, PackageOpen, PackageX, ChevronRight } from 'lucide-react';
 
 interface EstoqueItem {
   id: string;
   barcode: string;
-  status: 'confirmed_output_warehouse' | 'input_warehouse' | 'confirmed_input_warehouse';
+  status: 'confirmed_output_warehouse' | 'input_warehouse' | 'confirmed_input_warehouse' | 'error_input_warehouse';
 }
 
 const Estoque = () => {
@@ -88,7 +88,8 @@ const Estoque = () => {
   const contadores = {
     confirmed_output_warehouse: itensEstoque.filter(item => item.status === 'confirmed_output_warehouse').length,
     input_warehouse: itensEstoque.filter(item => item.status === 'input_warehouse').length,
-    confirmed_input_warehouse: itensEstoque.filter(item => item.status === 'confirmed_input_warehouse').length
+    confirmed_input_warehouse: itensEstoque.filter(item => item.status === 'confirmed_input_warehouse').length,
+    error_input_warehouse: itensEstoque.filter(item => item.status === 'error_input_warehouse').length
   };
 
   const estoqueData = [
@@ -99,7 +100,8 @@ const Estoque = () => {
       icon: PackageMinus,
       path: "/estoque/pacotes-enviados",
       color: "text-red-600",
-      bgColor: "bg-red-50"
+      bgColor: "bg-red-50",
+      status: 'confirmed_output_warehouse'
     },
     {
       title: "Pacotes bipados",
@@ -108,7 +110,8 @@ const Estoque = () => {
       icon: PackageOpen,
       path: "/estoque/pacotes-bipados",
       color: "text-yellow-600",
-      bgColor: "bg-yellow-50"
+      bgColor: "bg-yellow-50",
+      status: 'input_warehouse'
     },
     {
       title: "Pacotes no estoque",
@@ -117,7 +120,18 @@ const Estoque = () => {
       icon: PackageCheck,
       path: "/estoque/pacotes-confirmados",
       color: "text-green-600",
-      bgColor: "bg-green-50"
+      bgColor: "bg-green-50",
+      status: 'confirmed_input_warehouse'
+    },
+    {
+      title: "Pacotes com erro",
+      description: "Erro na finalização do recebimento",
+      count: contadores.error_input_warehouse,
+      icon: PackageX,
+      path: "/estoque/pacotes-erro",
+      color: "text-red-600",
+      bgColor: "bg-red-50",
+      status: 'error_input_warehouse'
     }
   ];
 
@@ -137,7 +151,7 @@ const Estoque = () => {
         {estoqueData.map((item) => (
           <button
             key={item.title}
-            onClick={() => navigate(item.path, { state: { status: item.title.includes('enviados') ? 'confirmed_output_warehouse' : item.title.includes('bipados') ? 'input_warehouse' : 'confirmed_input_warehouse', itens: itensEstoque } })}
+            onClick={() => navigate(item.path, { state: { status: item.status, itens: itensEstoque } })}
             className="w-full bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow text-left"
           >
             <div className="flex items-center justify-between">
