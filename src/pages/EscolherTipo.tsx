@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -71,6 +70,8 @@ const EscolherTipo = () => {
         requestBody.user_id = userId;
       }
 
+      console.log('Enviando dados para o endpoint:', requestBody);
+
       const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
         method: 'POST',
         headers: {
@@ -80,8 +81,25 @@ const EscolherTipo = () => {
         body: JSON.stringify(requestBody)
       });
 
+      console.log('Status da resposta:', response.status);
+      
+      const responseData = await response.json();
+      console.log('Dados da resposta:', responseData);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Se o status for 500 mas a resposta indica "No item to return got found"
+        // Pode ser que o endpoint esteja funcionando mas não encontrou os itens
+        if (response.status === 500 && responseData.message === "No item to return got found") {
+          console.warn('Endpoint retornou: itens não encontrados, mas continuando processamento');
+          toast({
+            title: "Aviso",
+            description: "Alguns códigos podem não ter sido encontrados no sistema, mas o processamento continuará.",
+            variant: "default",
+          });
+          return true; // Continua o processamento mesmo com este "erro"
+        }
+        
+        throw new Error(`HTTP error! status: ${response.status} - ${responseData.message || 'Erro desconhecido'}`);
       }
 
       console.log('Dados enviados com sucesso:', requestBody);
@@ -90,7 +108,7 @@ const EscolherTipo = () => {
       console.error('Erro ao enviar dados:', error);
       toast({
         title: "Erro ao processar",
-        description: "Falha ao enviar dados para o servidor",
+        description: error instanceof Error ? error.message : "Falha ao enviar dados para o servidor",
         variant: "destructive",
       });
       return false;
@@ -104,9 +122,13 @@ const EscolherTipo = () => {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const userId = userData.user_id || userData.id;
 
+    console.log('Dados do usuário:', userData);
+    console.log('User ID encontrado:', userId);
+
     if (tipoServico === 'entrada') {
       // Extrai os códigos dos pacotes
       const barcodes = pacotes.map(p => p.codigo);
+      console.log('Códigos para entrada:', barcodes);
       
       // Envia para o endpoint com type "recepcion"
       const success = await sendToEndpoint(barcodes, 'recepcion', userId);
@@ -128,6 +150,7 @@ const EscolherTipo = () => {
     } else if (tipoServico === 'saida') {
       // Extrai os códigos dos pacotes
       const barcodes = pacotes.map(p => p.codigo);
+      console.log('Códigos para saída:', barcodes);
       
       // Envia para o endpoint com type "salida"
       const success = await sendToEndpoint(barcodes, 'salida', userId);
