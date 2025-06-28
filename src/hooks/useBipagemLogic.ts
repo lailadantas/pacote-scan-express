@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
@@ -29,6 +28,41 @@ export const useBipagemLogic = () => {
   const pontoId = searchParams.get('pontoId');
   const isColeta = contexto === 'coleta';
 
+  // Verificar se os dados de sessão estão disponíveis
+  const checkSessionData = () => {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userId = userData.user_id || userData.id;
+    const personId = userData.person_id;
+    const token = userData.token || localStorage.getItem('authToken');
+
+    if (!userId || !personId || !token) {
+      console.warn('Dados de sessão incompletos:', { userId, personId, token: !!token });
+      
+      // Limpar dados inválidos
+      localStorage.removeItem('userData');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('currentUser');
+      
+      // Mostrar toast de erro e redirecionar para login
+      playErrorBeep();
+      setToast({
+        show: true,
+        type: 'error',
+        title: 'Sessão expirada',
+        description: 'Por favor, faça login novamente'
+      });
+      
+      setTimeout(() => {
+        navigate('/auth', { replace: true });
+      }, 2000);
+      
+      return false;
+    }
+
+    return { userId, personId, token };
+  };
+
   // Recuperar pacotes do estado se existirem
   useEffect(() => {
     if (location.state?.pacotes) {
@@ -39,6 +73,9 @@ export const useBipagemLogic = () => {
   // Consultar itens já bipados ao entrar na tela
   useEffect(() => {
     const consultarItensBipados = async () => {
+      const sessionData = checkSessionData();
+      if (!sessionData) return;
+
       try {
         playRequestBeep();
         setToast({
@@ -48,33 +85,19 @@ export const useBipagemLogic = () => {
           description: 'Verificando itens já bipados'
         });
 
-        const requestBody: any = {
-          type: 'consulting'
+        const requestBody = {
+          type: 'consulting',
+          user_id: sessionData.userId,
+          person_id: sessionData.personId
         };
-
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        const userId = userData.user_id || userData.id;
-        const personId = userData.person_id;
-        const token = userData.token || localStorage.getItem('authToken');
-
-        if (userId) {
-          requestBody.user_id = userId;
-        }
-
-        if (personId) {
-          requestBody.person_id = personId;
-        }
 
         console.log('Consultando itens já bipados:', requestBody);
 
-        const headers: any = {
+        const headers = {
           'Content-Type': 'application/json',
-          'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
+          'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o=',
+          'X-Auth-Token': `Bearer ${sessionData.token}`
         };
-
-        if (token) {
-          headers['X-Auth-Token'] = `Bearer ${token}`;
-        }
 
         const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
           method: 'POST',
@@ -125,9 +148,12 @@ export const useBipagemLogic = () => {
     };
 
     consultarItensBipados();
-  }, [playRequestBeep, playSuccessBeep, playErrorBeep]);
+  }, [playRequestBeep, playSuccessBeep, playErrorBeep, navigate]);
 
   const sendToEndpoint = async (barcode: string, type: 'register' | 'delete') => {
+    const sessionData = checkSessionData();
+    if (!sessionData) return false;
+
     try {
       playRequestBeep();
       setToast({
@@ -137,35 +163,20 @@ export const useBipagemLogic = () => {
         description: `Processando: ${barcode}`
       });
 
-      const requestBody: any = {
+      const requestBody = {
         type: type,
-        barcodes: [barcode]
+        barcodes: [barcode],
+        user_id: sessionData.userId,
+        person_id: sessionData.personId
       };
-
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const userId = userData.user_id || userData.id;
-      const personId = userData.person_id;
-      const token = userData.token || localStorage.getItem('authToken');
-
-      if (userId) {
-        requestBody.user_id = userId;
-      }
-
-      if (personId) {
-        requestBody.person_id = personId;
-      }
 
       console.log(`Enviando código para ${type}:`, requestBody);
-      console.log('Token utilizado:', token ? 'Token encontrado' : 'Token não encontrado');
 
-      const headers: any = {
+      const headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
+        'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o=',
+        'X-Auth-Token': `Bearer ${sessionData.token}`
       };
-
-      if (token) {
-        headers['X-Auth-Token'] = `Bearer ${token}`;
-      }
 
       const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
         method: 'POST',
