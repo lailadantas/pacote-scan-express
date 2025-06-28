@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
@@ -8,6 +9,16 @@ import { toast } from '@/hooks/use-toast';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
 import { useFreightTracking } from '@/hooks/useFreightTracking';
 import { Pacote } from '@/types/Pacote';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Bipagem = () => {
   const navigate = useNavigate();
@@ -15,6 +26,8 @@ const Bipagem = () => {
   const [searchParams] = useSearchParams();
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [isScannerActive, setIsScannerActive] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [pendingCode, setPendingCode] = useState<string>('');
   const { playSuccessBeep, playErrorBeep } = useBeepSounds();
   const { validateFreightOrder } = useFreightTracking();
 
@@ -35,10 +48,10 @@ const Bipagem = () => {
     return "Bipagem de itens";
   };
 
-  const sendToEndpoint = async (barcode: string) => {
+  const sendToEndpoint = async (barcode: string, type: 'register' | 'delete') => {
     try {
       const requestBody: any = {
-        type: "register",
+        type: type,
         barcodes: [barcode]
       };
 
@@ -58,7 +71,7 @@ const Bipagem = () => {
         requestBody.person_id = personId;
       }
 
-      console.log('Enviando código para registro:', requestBody);
+      console.log(`Enviando código para ${type}:`, requestBody);
       console.log('Token utilizado:', token ? 'Token encontrado' : 'Token não encontrado');
 
       const headers: any = {
@@ -93,12 +106,12 @@ const Bipagem = () => {
         throw new Error(`HTTP error! status: ${response.status} - ${responseData.message || 'Erro desconhecido'}`);
       }
 
-      console.log('Código registrado com sucesso:', barcode);
+      console.log(`Código ${type === 'register' ? 'registrado' : 'removido'} com sucesso:`, barcode);
       return true;
     } catch (error) {
-      console.error('Erro ao registrar código:', error);
+      console.error(`Erro ao ${type === 'register' ? 'registrar' : 'remover'} código:`, error);
       toast({
-        title: "Erro ao registrar código",
+        title: `Erro ao ${type === 'register' ? 'registrar' : 'remover'} código`,
         description: error instanceof Error ? error.message : "Falha ao enviar dados para o servidor",
         variant: "destructive",
       });
@@ -113,19 +126,13 @@ const Bipagem = () => {
     const existingPacote = pacotes.find(p => p.codigo === code);
     if (existingPacote) {
       playErrorBeep();
-      navigate('/resultado-bipagem', { 
-        state: { 
-          resultado: 'erro', 
-          codigo: code,
-          pacotes: pacotes
-        },
-        replace: true 
-      });
+      setPendingCode(code);
+      setShowDeleteDialog(true);
       return;
     }
 
     // Envia o código para o endpoint de registro
-    const registrationSuccess = await sendToEndpoint(code);
+    const registrationSuccess = await sendToEndpoint(code, 'register');
 
     // Valida o código via API
     const trackingResult = await validateFreightOrder(code);
@@ -187,8 +194,40 @@ const Bipagem = () => {
     }
   };
 
-  const removePacote = (id: string) => {
-    setPacotes(prev => prev.filter(p => p.id !== id));
+  const handleDeleteConfirm = async () => {
+    const success = await sendToEndpoint(pendingCode, 'delete');
+    
+    if (success) {
+      // Remove o pacote da lista local
+      setPacotes(prev => prev.filter(p => p.codigo !== pendingCode));
+      toast({
+        title: "Item removido",
+        description: `Código ${pendingCode} foi removido com sucesso`,
+      });
+    }
+    
+    setShowDeleteDialog(false);
+    setPendingCode('');
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+    setPendingCode('');
+  };
+
+  const removePacote = async (id: string) => {
+    const pacote = pacotes.find(p => p.id === id);
+    if (pacote) {
+      const success = await sendToEndpoint(pacote.codigo, 'delete');
+      
+      if (success) {
+        setPacotes(prev => prev.filter(p => p.id !== id));
+        toast({
+          title: "Item removido",
+          description: `Código ${pacote.codigo} foi removido com sucesso`,
+        });
+      }
+    }
   };
 
   const handleDigitarCodigo = () => {
@@ -217,55 +256,72 @@ const Bipagem = () => {
   };
 
   return (
-    <MobileLayout 
-      title={getTitulo()} 
-      showBackButton 
-      showBottomNav={false}
-      onBackClick={() => navigate('/home')}
-    >
-      <div className="flex flex-col h-full relative">
-        {/* Área de Bipagem */}
-        <div className="flex-1 p-4 pb-32">
-          {/* Scanner Area */}
-          <BarcodeScanner 
-            onCodeDetected={handleCodeDetected}
-            isActive={isScannerActive}
-          />
+    <>
+      <MobileLayout 
+        title={getTitulo()} 
+        showBackButton 
+        showBottomNav={false}
+        onBackClick={() => navigate('/home')}
+      >
+        <div className="flex flex-col h-full relative">
+          {/* Área de Bipagem */}
+          <div className="flex-1 p-4 pb-32">
+            {/* Scanner Area */}
+            <BarcodeScanner 
+              onCodeDetected={handleCodeDetected}
+              isActive={isScannerActive}
+            />
 
-          {/* Status Message */}
-          <div className="bg-white rounded-xl p-4 my-6 shadow-sm">
-            <div className="flex items-center justify-center">
-              <ScanLine className="w-6 h-6 mr-3 text-gray-600" />
-              <span className="text-center font-medium text-gray-600">
-                Posicione o código de barras dentro da área tracejada
-              </span>
+            {/* Status Message */}
+            <div className="bg-white rounded-xl p-4 my-6 shadow-sm">
+              <div className="flex items-center justify-center">
+                <ScanLine className="w-6 h-6 mr-3 text-gray-600" />
+                <span className="text-center font-medium text-gray-600">
+                  Posicione o código de barras dentro da área tracejada
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleDigitarCodigo}
+                className="flex-1 bg-white border-2 border-orange-500 text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
+              >
+                Digitar código
+              </button>
+              <button
+                onClick={finalizarBipagem}
+                className="flex-1 bg-white border-2 border-orange-500 text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
+              >
+                Finalizar
+              </button>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleDigitarCodigo}
-              className="flex-1 bg-white border-2 border-orange-500 text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
-            >
-              Digitar código
-            </button>
-            <button
-              onClick={finalizarBipagem}
-              className="flex-1 bg-white border-2 border-orange-500 text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
-            >
-              Finalizar
-            </button>
-          </div>
+          {/* Pacotes Bipados (Fixed at bottom) */}
+          <PacotesBipados 
+            pacotes={pacotes}
+            onRemovePacote={removePacote}
+          />
         </div>
+      </MobileLayout>
 
-        {/* Pacotes Bipados (Fixed at bottom) */}
-        <PacotesBipados 
-          pacotes={pacotes}
-          onRemovePacote={removePacote}
-        />
-      </div>
-    </MobileLayout>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Item já foi bipado</AlertDialogTitle>
+            <AlertDialogDescription>
+              O código {pendingCode} já foi bipado anteriormente. Deseja remover este item da lista?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Sim, remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

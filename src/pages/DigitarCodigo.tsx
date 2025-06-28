@@ -5,6 +5,16 @@ import MobileLayout from '@/components/MobileLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const DigitarCodigo = () => {
   const navigate = useNavigate();
@@ -12,11 +22,12 @@ const DigitarCodigo = () => {
   const { pacotes = [] } = location.state || {};
   const [codigo, setCodigo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const sendToEndpoint = async (barcode: string) => {
+  const sendToEndpoint = async (barcode: string, type: 'register' | 'delete') => {
     try {
       const requestBody: any = {
-        type: "register",
+        type: type,
         barcodes: [barcode]
       };
 
@@ -36,7 +47,7 @@ const DigitarCodigo = () => {
         requestBody.person_id = personId;
       }
 
-      console.log('Enviando código digitado para registro:', requestBody);
+      console.log(`Enviando código digitado para ${type}:`, requestBody);
       console.log('Token utilizado:', token ? 'Token encontrado' : 'Token não encontrado');
 
       const headers: any = {
@@ -71,17 +82,52 @@ const DigitarCodigo = () => {
         throw new Error(`HTTP error! status: ${response.status} - ${responseData.message || 'Erro desconhecido'}`);
       }
 
-      console.log('Código registrado com sucesso:', barcode);
+      console.log(`Código ${type === 'register' ? 'registrado' : 'removido'} com sucesso:`, barcode);
       return true;
     } catch (error) {
-      console.error('Erro ao registrar código:', error);
+      console.error(`Erro ao ${type === 'register' ? 'registrar' : 'remover'} código:`, error);
       toast({
-        title: "Erro ao registrar código",
+        title: `Erro ao ${type === 'register' ? 'registrar' : 'remover'} código`,
         description: error instanceof Error ? error.message : "Falha ao enviar dados para o servidor",
         variant: "destructive",
       });
       return false;
     }
+  };
+
+  const handleDeleteConfirm = async () => {
+    const success = await sendToEndpoint(codigo, 'delete');
+    
+    if (success) {
+      // Remove o pacote da lista local
+      const updatedPacotes = pacotes.filter((p: any) => p.codigo !== codigo);
+      
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'sucesso', 
+          codigo: codigo,
+          pacotes: updatedPacotes
+        },
+        replace: true 
+      });
+    } else {
+      navigate('/resultado-bipagem', { 
+        state: { 
+          resultado: 'erro', 
+          codigo: codigo,
+          pacotes: pacotes
+        },
+        replace: true 
+      });
+    }
+    
+    setShowDeleteDialog(false);
+    setIsLoading(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+    setIsLoading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,21 +148,14 @@ const DigitarCodigo = () => {
     // Verifica se o código já existe
     const existingPacote = pacotes.find((p: any) => p.codigo === codigo);
     if (existingPacote) {
-      navigate('/resultado-bipagem', { 
-        state: { 
-          resultado: 'erro', 
-          codigo: codigo,
-          pacotes: pacotes
-        },
-        replace: true 
-      });
+      setShowDeleteDialog(true);
       return;
     }
 
     setIsLoading(true);
     
     // Envia o código para o endpoint de registro
-    const registrationSuccess = await sendToEndpoint(codigo);
+    const registrationSuccess = await sendToEndpoint(codigo, 'register');
     
     // Simula processamento adicional
     setTimeout(() => {
@@ -149,49 +188,67 @@ const DigitarCodigo = () => {
           replace: true 
         });
       }
+      setIsLoading(false);
     }, 1000);
   };
 
   return (
-    <MobileLayout 
-      title="Digitar código" 
-      showBackButton 
-      showBottomNav={false}
-    >
-      <div className="p-4 h-full flex flex-col">
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Inserir código manualmente
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Código do produto
-                </label>
-                <Input
-                  type="text"
-                  value={codigo}
-                  onChange={(e) => setCodigo(e.target.value)}
-                  placeholder="Digite o código aqui..."
-                  className="font-mono"
-                  disabled={isLoading}
-                />
-              </div>
+    <>
+      <MobileLayout 
+        title="Digitar código" 
+        showBackButton 
+        showBottomNav={false}
+      >
+        <div className="p-4 h-full flex flex-col">
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                Inserir código manualmente
+              </h2>
               
-              <Button
-                type="submit"
-                className="w-full bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-50"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Processando...' : 'Enviar'}
-              </Button>
-            </form>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Código do produto
+                  </label>
+                  <Input
+                    type="text"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value)}
+                    placeholder="Digite o código aqui..."
+                    className="font-mono"
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-50"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Processando...' : 'Enviar'}
+                </Button>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
-    </MobileLayout>
+      </MobileLayout>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Item já foi bipado</AlertDialogTitle>
+            <AlertDialogDescription>
+              O código {codigo} já foi bipado anteriormente. Deseja remover este item da lista?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Sim, remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
