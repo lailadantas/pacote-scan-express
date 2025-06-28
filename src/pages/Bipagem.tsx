@@ -43,6 +43,72 @@ const Bipagem = () => {
     }
   }, [location.state]);
 
+  // Consultar itens já bipados ao entrar na tela
+  useEffect(() => {
+    const consultarItensBipados = async () => {
+      try {
+        const requestBody: any = {
+          type: 'consulting'
+        };
+
+        // Recupera user_id e person_id do localStorage se disponível
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const userId = userData.user_id || userData.id;
+        const personId = userData.person_id;
+        const token = userData.token || localStorage.getItem('authToken');
+
+        // Adiciona user_id se estiver disponível
+        if (userId) {
+          requestBody.user_id = userId;
+        }
+
+        // Adiciona person_id se estiver disponível
+        if (personId) {
+          requestBody.person_id = personId;
+        }
+
+        console.log('Consultando itens já bipados:', requestBody);
+
+        const headers: any = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
+        };
+
+        // Adiciona o token Bearer se estiver disponível
+        if (token) {
+          headers['X-Auth-Token'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(requestBody)
+        });
+
+        if (response.ok) {
+          const responseData = await response.json();
+          console.log('Itens já bipados encontrados:', responseData);
+          
+          // Converter os itens retornados para o formato de Pacote
+          if (Array.isArray(responseData)) {
+            const pacotesExistentes = responseData.map((item: any) => ({
+              id: item.id || Date.now().toString(),
+              codigo: item.barcode,
+              status: 'validado'
+            }));
+            setPacotes(pacotesExistentes);
+          }
+        } else {
+          console.warn('Erro ao consultar itens bipados:', response.status);
+        }
+      } catch (error) {
+        console.error('Erro ao consultar itens bipados:', error);
+      }
+    };
+
+    consultarItensBipados();
+  }, []);
+
   const getTitulo = () => {
     if (isColeta) return "Bipagem - Coleta";
     return "Bipagem de itens";
@@ -137,16 +203,16 @@ const Bipagem = () => {
     // Valida o código via API
     const trackingResult = await validateFreightOrder(code);
     
-    if (registrationSuccess && trackingResult.success) {
+    if (registrationSuccess) {
       playSuccessBeep();
       const newPacote: Pacote = {
         id: Date.now().toString(),
         codigo: code,
-        status: 'validado',
+        status: trackingResult.success ? 'validado' : 'erro',
         trackingStatus: trackingResult.data
       };
       
-      const updatedPacotes = [...pacotes, newPacote];
+      setPacotes(prev => [...prev, newPacote]);
       
       // Registra o evento no localStorage
       const trackingEvents = JSON.parse(localStorage.getItem('trackingEvents') || '[]');
@@ -155,41 +221,12 @@ const Bipagem = () => {
         timestamp: new Date().toISOString()
       });
       localStorage.setItem('trackingEvents', JSON.stringify(trackingEvents));
-      
-      navigate('/resultado-bipagem', { 
-        state: { 
-          resultado: 'sucesso', 
-          codigo: code,
-          pacotes: updatedPacotes
-        },
-        replace: true 
-      });
     } else {
       playErrorBeep();
-      const newPacote: Pacote = {
-        id: Date.now().toString(),
-        codigo: code,
-        status: 'erro',
-        trackingStatus: trackingResult.data
-      };
-      
-      const updatedPacotes = [...pacotes, newPacote];
-      
-      // Registra o evento mesmo com erro
-      const trackingEvents = JSON.parse(localStorage.getItem('trackingEvents') || '[]');
-      trackingEvents.push({
-        ...trackingResult.data,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('trackingEvents', JSON.stringify(trackingEvents));
-      
-      navigate('/resultado-bipagem', { 
-        state: { 
-          resultado: 'pendencia', 
-          codigo: code,
-          pacotes: updatedPacotes
-        },
-        replace: true 
+      toast({
+        title: "Erro na bipagem",
+        description: "Falha ao registrar o código",
+        variant: "destructive",
       });
     }
   };
@@ -303,6 +340,7 @@ const Bipagem = () => {
           <PacotesBipados 
             pacotes={pacotes}
             onRemovePacote={removePacote}
+            defaultExpanded={true}
           />
         </div>
       </MobileLayout>

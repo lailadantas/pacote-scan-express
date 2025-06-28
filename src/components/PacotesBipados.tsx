@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Package, ChevronUp, ChevronDown, Check, Trash2, ChevronRight, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,10 +9,11 @@ import PackageDetailsModal from './PackageDetailsModal';
 interface PacotesBipadosProps {
   pacotes: Pacote[];
   onRemovePacote: (id: string) => void;
+  defaultExpanded?: boolean;
 }
 
-const PacotesBipados = ({ pacotes, onRemovePacote }: PacotesBipadosProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const PacotesBipados = ({ pacotes, onRemovePacote, defaultExpanded = false }: PacotesBipadosProps) => {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [selectedPacote, setSelectedPacote] = useState<Pacote | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();

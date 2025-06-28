@@ -5,6 +5,9 @@ import MobileLayout from '@/components/MobileLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { useBeepSounds } from '@/hooks/useBeepSounds';
+import { useFreightTracking } from '@/hooks/useFreightTracking';
+import { Pacote } from '@/types/Pacote';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +26,8 @@ const DigitarCodigo = () => {
   const [codigo, setCodigo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { playSuccessBeep, playErrorBeep } = useBeepSounds();
+  const { validateFreightOrder } = useFreightTracking();
 
   const sendToEndpoint = async (barcode: string, type: 'register' | 'delete') => {
     try {
@@ -99,25 +104,21 @@ const DigitarCodigo = () => {
     const success = await sendToEndpoint(codigo, 'delete');
     
     if (success) {
+      playSuccessBeep();
       // Remove o pacote da lista local
       const updatedPacotes = pacotes.filter((p: any) => p.codigo !== codigo);
       
-      navigate('/resultado-bipagem', { 
-        state: { 
-          resultado: 'sucesso', 
-          codigo: codigo,
-          pacotes: updatedPacotes
-        },
+      // Volta para a tela de bipagem com a lista atualizada
+      navigate('/bipagem', { 
+        state: { pacotes: updatedPacotes },
         replace: true 
       });
     } else {
-      navigate('/resultado-bipagem', { 
-        state: { 
-          resultado: 'erro', 
-          codigo: codigo,
-          pacotes: pacotes
-        },
-        replace: true 
+      playErrorBeep();
+      toast({
+        title: "Erro ao remover",
+        description: "Falha ao remover o código",
+        variant: "destructive",
       });
     }
     
@@ -134,13 +135,10 @@ const DigitarCodigo = () => {
     e.preventDefault();
     
     if (!codigo.trim()) {
-      navigate('/resultado-bipagem', { 
-        state: { 
-          resultado: 'erro', 
-          codigo: codigo,
-          pacotes: pacotes
-        },
-        replace: true 
+      toast({
+        title: "Código inválido",
+        description: "Por favor, digite um código válido",
+        variant: "destructive",
       });
       return;
     }
@@ -157,39 +155,38 @@ const DigitarCodigo = () => {
     // Envia o código para o endpoint de registro
     const registrationSuccess = await sendToEndpoint(codigo, 'register');
     
-    // Simula processamento adicional
-    setTimeout(() => {
-      if (registrationSuccess) {
-        // Cria o novo pacote
-        const newPacote = {
-          id: Date.now().toString(),
-          codigo: codigo,
-          status: 'bipado'
-        };
-        
-        // Adiciona à lista de pacotes
-        const updatedPacotes = [...pacotes, newPacote];
-        
-        navigate('/resultado-bipagem', { 
-          state: { 
-            resultado: 'sucesso', 
-            codigo: codigo,
-            pacotes: updatedPacotes
-          },
-          replace: true 
-        });
-      } else {
-        navigate('/resultado-bipagem', { 
-          state: { 
-            resultado: 'erro', 
-            codigo: codigo,
-            pacotes: pacotes
-          },
-          replace: true 
-        });
-      }
-      setIsLoading(false);
-    }, 1000);
+    if (registrationSuccess) {
+      playSuccessBeep();
+      
+      // Valida o código via API
+      const trackingResult = await validateFreightTrackingOrder(codigo);
+      
+      // Cria o novo pacote
+      const newPacote: Pacote = {
+        id: Date.now().toString(),
+        codigo: codigo,
+        status: trackingResult.success ? 'validado' : 'erro',
+        trackingStatus: trackingResult.data
+      };
+      
+      // Adiciona à lista de pacotes
+      const updatedPacotes = [...pacotes, newPacote];
+      
+      // Volta para a tela de bipagem com a nova lista
+      navigate('/bipagem', { 
+        state: { pacotes: updatedPacotes },
+        replace: true 
+      });
+    } else {
+      playErrorBeep();
+      toast({
+        title: "Erro na bipagem",
+        description: "Falha ao registrar o código",
+        variant: "destructive",
+      });
+    }
+    
+    setIsLoading(false);
   };
 
   return (
