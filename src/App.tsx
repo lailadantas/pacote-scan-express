@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,6 +25,9 @@ import Estoque from "./pages/Estoque";
 import PacotesComigo from "./pages/PacotesComigo";
 import PacotesProblema from "./pages/PacotesProblema";
 import PacotesRota from "./pages/PacotesRota";
+import PacotesEnviados from "./pages/PacotesEnviados";
+import PacotesBipados from "./pages/PacotesBipados";
+import PacotesConfirmados from "./pages/PacotesConfirmados";
 import DetalhePacote from "./pages/DetalhePacote";
 import Chat from "./pages/Chat";
 import Financeiro from "./pages/Financeiro";
@@ -97,7 +101,10 @@ const App = () => (
         <Route path="/estoque" element={<Estoque />} />
         <Route path="/estoque/pacotes-comigo" element={<PacotesComigo />} />
         <Route path="/estoque/pacotes-problema" element={<PacotesProblema />} />
-        <Route path="/estoque/pacotes-rota" element={<PacotesRota />}        />
+        <Route path="/estoque/pacotes-rota" element={<PacotesRota />} />
+        <Route path="/estoque/pacotes-enviados" element={<PacotesEnviados />} />
+        <Route path="/estoque/pacotes-bipados" element={<PacotesBipados />} />
+        <Route path="/estoque/pacotes-confirmados" element={<PacotesConfirmados />} />
         <Route path="/estoque/detalhes/:id" element={<DetalhePacote />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/financeiro" element={<Financeiro />} />
