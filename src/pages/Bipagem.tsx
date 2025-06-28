@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
 import PacotesBipados from '@/components/PacotesBipados';
 import BarcodeScanner from '@/components/BarcodeScanner';
+import RequestToast from '@/components/RequestToast';
 import { ScanLine } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
 import { useFreightTracking } from '@/hooks/useFreightTracking';
 import { Pacote } from '@/types/Pacote';
@@ -20,6 +19,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface ToastState {
+  show: boolean;
+  type: 'loading' | 'success' | 'error';
+  title: string;
+  description?: string;
+}
+
 const Bipagem = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,7 +34,8 @@ const Bipagem = () => {
   const [isScannerActive, setIsScannerActive] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [pendingCode, setPendingCode] = useState<string>('');
-  const { playSuccessBeep, playErrorBeep } = useBeepSounds();
+  const [toast, setToast] = useState<ToastState>({ show: false, type: 'loading', title: '' });
+  const { playSuccessBeep, playErrorBeep, playRequestBeep } = useBeepSounds();
   const { validateFreightOrder } = useFreightTracking();
 
   // Detectar contexto
@@ -47,6 +54,15 @@ const Bipagem = () => {
   useEffect(() => {
     const consultarItensBipados = async () => {
       try {
+        // Play request beep and show loading toast
+        playRequestBeep();
+        setToast({
+          show: true,
+          type: 'loading',
+          title: 'Consultando itens...',
+          description: 'Verificando itens já bipados'
+        });
+
         const requestBody: any = {
           type: 'consulting'
         };
@@ -98,16 +114,40 @@ const Bipagem = () => {
             }));
             setPacotes(pacotesExistentes);
           }
+
+          // Success toast
+          playSuccessBeep();
+          setToast({
+            show: true,
+            type: 'success',
+            title: 'Consulta realizada!',
+            description: `${Array.isArray(responseData) ? responseData.length : 0} itens encontrados`
+          });
         } else {
+          // Error toast
+          playErrorBeep();
+          setToast({
+            show: true,
+            type: 'error',
+            title: 'Erro na consulta',
+            description: 'Não foi possível consultar os itens'
+          });
           console.warn('Erro ao consultar itens bipados:', response.status);
         }
       } catch (error) {
         console.error('Erro ao consultar itens bipados:', error);
+        playErrorBeep();
+        setToast({
+          show: true,
+          type: 'error',
+          title: 'Erro de conexão',
+          description: 'Falha ao conectar com o servidor'
+        });
       }
     };
 
     consultarItensBipados();
-  }, []);
+  }, [playRequestBeep, playSuccessBeep, playErrorBeep]);
 
   const getTitulo = () => {
     if (isColeta) return "Bipagem - Coleta";
@@ -116,6 +156,15 @@ const Bipagem = () => {
 
   const sendToEndpoint = async (barcode: string, type: 'register' | 'delete') => {
     try {
+      // Play request beep and show loading toast
+      playRequestBeep();
+      setToast({
+        show: true,
+        type: 'loading',
+        title: `${type === 'register' ? 'Registrando' : 'Removendo'} código...`,
+        description: `Processando: ${barcode}`
+      });
+
       const requestBody: any = {
         type: type,
         barcodes: [barcode]
@@ -161,25 +210,43 @@ const Bipagem = () => {
       const responseData = await response.json();
       console.log('Dados da resposta:', responseData);
 
-      if (!response.ok) {
-        // Se o status for 500 mas a resposta indica "No item to return got found"
-        // Pode ser que o endpoint esteja funcionando mas não encontrou os itens
+      if (response.ok) {
+        // Success toast
+        playSuccessBeep();
+        setToast({
+          show: true,
+          type: 'success',
+          title: `Código ${type === 'register' ? 'registrado' : 'removido'}!`,
+          description: `${barcode} processado com sucesso`
+        });
+        
+        console.log(`Código ${type === 'register' ? 'registrado' : 'removido'} com sucesso:`, barcode);
+        return true;
+      } else {
+        // Error toast
+        playErrorBeep();
+        setToast({
+          show: true,
+          type: 'error',
+          title: `Erro ao ${type === 'register' ? 'registrar' : 'remover'}`,
+          description: responseData.message || 'Erro desconhecido'
+        });
+
         if (response.status === 500 && responseData.message === "No item to return got found") {
           console.warn('Endpoint retornou: itens não encontrados, mas continuando processamento');
-          return true; // Continua o processamento mesmo com este "erro"
+          return true;
         }
         
         throw new Error(`HTTP error! status: ${response.status} - ${responseData.message || 'Erro desconhecido'}`);
       }
-
-      console.log(`Código ${type === 'register' ? 'registrado' : 'removido'} com sucesso:`, barcode);
-      return true;
     } catch (error) {
       console.error(`Erro ao ${type === 'register' ? 'registrar' : 'remover'} código:`, error);
-      toast({
-        title: `Erro ao ${type === 'register' ? 'registrar' : 'remover'} código`,
-        description: error instanceof Error ? error.message : "Falha ao enviar dados para o servidor",
-        variant: "destructive",
+      playErrorBeep();
+      setToast({
+        show: true,
+        type: 'error',
+        title: `Erro ao ${type === 'register' ? 'registrar' : 'remover'}`,
+        description: error instanceof Error ? error.message : "Falha ao enviar dados"
       });
       return false;
     }
@@ -201,8 +268,6 @@ const Bipagem = () => {
     const registrationSuccess = await sendToEndpoint(code, 'register');
 
     if (registrationSuccess) {
-      playSuccessBeep();
-      
       // Valida o código via API
       const trackingResult = await validateFreightOrder(code);
       
@@ -222,8 +287,6 @@ const Bipagem = () => {
         timestamp: new Date().toISOString()
       });
       localStorage.setItem('trackingEvents', JSON.stringify(trackingEvents));
-    } else {
-      playErrorBeep();
     }
   };
 
@@ -231,12 +294,7 @@ const Bipagem = () => {
     const success = await sendToEndpoint(pendingCode, 'delete');
     
     if (success) {
-      // Remove o pacote da lista local
       setPacotes(prev => prev.filter(p => p.codigo !== pendingCode));
-      toast({
-        title: "Item removido",
-        description: `Código ${pendingCode} foi removido com sucesso`,
-      });
     }
     
     setShowDeleteDialog(false);
@@ -255,10 +313,6 @@ const Bipagem = () => {
       
       if (success) {
         setPacotes(prev => prev.filter(p => p.id !== id));
-        toast({
-          title: "Item removido",
-          description: `Código ${pacote.codigo} foi removido com sucesso`,
-        });
       }
     }
   };
@@ -271,10 +325,12 @@ const Bipagem = () => {
 
   const finalizarBipagem = () => {
     if (pacotes.length === 0) {
-      toast({
-        title: "Nenhum pacote bipado",
-        description: "Bipe pelo menos um pacote antes de finalizar",
-        variant: "destructive",
+      playErrorBeep();
+      setToast({
+        show: true,
+        type: 'error',
+        title: 'Nenhum pacote bipado',
+        description: 'Bipe pelo menos um pacote antes de finalizar'
       });
       return;
     }
@@ -355,6 +411,16 @@ const Bipagem = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Request Toast */}
+      {toast.show && (
+        <RequestToast
+          type={toast.type}
+          title={toast.title}
+          description={toast.description}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
     </>
   );
 };
