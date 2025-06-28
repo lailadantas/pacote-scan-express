@@ -132,7 +132,7 @@ const Estoque = () => {
   }
 
   return (
-    <MobileLayout title="Estoque" showBottomNav={true}>
+    <MobileLayout title="Estoque" showBackButton showBottomNav={true}>
       <div className="p-4 space-y-4">
         {estoqueData.map((item) => (
           <button
