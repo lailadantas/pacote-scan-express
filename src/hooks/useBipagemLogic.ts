@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
@@ -359,6 +357,7 @@ export const useBipagemLogic = () => {
 
       const requestBody = {
         type: 'recepcion',
+        barcodes: pacotes.map(p => p.codigo),
         user_id: sessionData.userId,
         person_id: sessionData.personId
       };
@@ -457,4 +456,3 @@ export const useBipagemLogic = () => {
     setShowDeleteDialog
   };
 };
-
