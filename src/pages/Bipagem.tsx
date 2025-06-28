@@ -91,10 +91,10 @@ const Bipagem = () => {
           
           // Converter os itens retornados para o formato de Pacote
           if (Array.isArray(responseData)) {
-            const pacotesExistentes = responseData.map((item: any) => ({
+            const pacotesExistentes: Pacote[] = responseData.map((item: any) => ({
               id: item.id || Date.now().toString(),
               codigo: item.barcode,
-              status: 'validado'
+              status: 'validado' as const
             }));
             setPacotes(pacotesExistentes);
           }

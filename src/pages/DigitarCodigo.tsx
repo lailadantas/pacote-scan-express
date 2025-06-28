@@ -158,8 +158,8 @@ const DigitarCodigo = () => {
     if (registrationSuccess) {
       playSuccessBeep();
       
-      // Valida o código via API
-      const trackingResult = await validateFreightTrackingOrder(codigo);
+      // Valida o código via API (fix: usar validateFreightOrder)
+      const trackingResult = await validateFreightOrder(codigo);
       
       // Cria o novo pacote
       const newPacote: Pacote = {
