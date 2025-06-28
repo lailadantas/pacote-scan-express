@@ -200,11 +200,12 @@ const Bipagem = () => {
     // Envia o código para o endpoint de registro
     const registrationSuccess = await sendToEndpoint(code, 'register');
 
-    // Valida o código via API
-    const trackingResult = await validateFreightOrder(code);
-    
     if (registrationSuccess) {
       playSuccessBeep();
+      
+      // Valida o código via API
+      const trackingResult = await validateFreightOrder(code);
+      
       const newPacote: Pacote = {
         id: Date.now().toString(),
         codigo: code,
@@ -223,11 +224,6 @@ const Bipagem = () => {
       localStorage.setItem('trackingEvents', JSON.stringify(trackingEvents));
     } else {
       playErrorBeep();
-      toast({
-        title: "Erro na bipagem",
-        description: "Falha ao registrar o código",
-        variant: "destructive",
-      });
     }
   };
 
@@ -300,9 +296,9 @@ const Bipagem = () => {
         showBottomNav={false}
         onBackClick={() => navigate('/home')}
       >
-        <div className="flex flex-col h-full relative">
+        <div className="flex flex-col h-full">
           {/* Área de Bipagem */}
-          <div className="flex-1 p-4 pb-32">
+          <div className="flex-1 p-4">
             {/* Scanner Area */}
             <BarcodeScanner 
               onCodeDetected={handleCodeDetected}
@@ -320,7 +316,7 @@ const Bipagem = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-4">
               <button
                 onClick={handleDigitarCodigo}
                 className="flex-1 bg-white border-2 border-orange-500 text-orange-500 py-3 px-4 rounded-xl font-medium hover:bg-orange-50 transition-colors"
@@ -336,7 +332,7 @@ const Bipagem = () => {
             </div>
           </div>
 
-          {/* Pacotes Bipados (Fixed at bottom) */}
+          {/* Pacotes Bipados (Fixed at bottom with grid) */}
           <PacotesBipados 
             pacotes={pacotes}
             onRemovePacote={removePacote}

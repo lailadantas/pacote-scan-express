@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Pacote } from '@/types/Pacote';
 import PackageDetailsModal from './PackageDetailsModal';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PacotesBipadosProps {
   pacotes: Pacote[];
@@ -47,9 +48,7 @@ const PacotesBipados = ({ pacotes, onRemovePacote, defaultExpanded = false }: Pa
 
   return (
     <>
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl" style={{
-        boxShadow: '0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -10px 10px -5px rgba(0, 0, 0, 0.04)'
-      }}>
+      <div className="bg-white border-t border-gray-200 shadow-lg">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -59,7 +58,7 @@ const PacotesBipados = ({ pacotes, onRemovePacote, defaultExpanded = false }: Pa
               <Package className="w-5 h-5 text-purple-600" />
             </div>
             <span className="font-medium text-gray-800">
-              {pacotes.length} pacotes
+              {pacotes.length} pacotes bipados
             </span>
           </div>
           {isExpanded ? (
@@ -72,7 +71,7 @@ const PacotesBipados = ({ pacotes, onRemovePacote, defaultExpanded = false }: Pa
         <div
           className={cn(
             "overflow-hidden transition-all duration-300 ease-in-out",
-            isExpanded ? "max-h-96" : "max-h-0"
+            isExpanded ? "max-h-80" : "max-h-0"
           )}
         >
           <div className="border-t border-gray-200">
@@ -86,37 +85,41 @@ const PacotesBipados = ({ pacotes, onRemovePacote, defaultExpanded = false }: Pa
                 </p>
               </div>
             ) : (
-              <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
-                <div className="flex text-xs font-medium text-gray-500 pb-2 border-b">
+              <div className="p-4">
+                <div className="flex text-xs font-medium text-gray-500 pb-2 border-b mb-3">
                   <span className="flex-1">Código do pacote</span>
                   <span className="w-20 text-center">Status</span>
                   <span className="w-16"></span>
                   <span className="w-10"></span>
                 </div>
-                {pacotes.map((pacote) => (
-                  <div key={pacote.id} className="flex items-center py-2 border-b border-gray-100 last:border-b-0">
-                    <span className="flex-1 font-mono text-sm text-gray-800">
-                      {pacote.codigo}
-                    </span>
-                    <div className="w-20 flex justify-center">
-                      <div className={`p-1 rounded ${getStatusBg(pacote)}`}>
-                        {getStatusIcon(pacote)}
+                <ScrollArea className="h-60">
+                  <div className="space-y-2 pr-4">
+                    {pacotes.map((pacote) => (
+                      <div key={pacote.id} className="flex items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <span className="flex-1 font-mono text-sm text-gray-800 truncate">
+                          {pacote.codigo}
+                        </span>
+                        <div className="w-20 flex justify-center">
+                          <div className={`p-1 rounded ${getStatusBg(pacote)}`}>
+                            {getStatusIcon(pacote)}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handlePacoteClick(pacote)}
+                          className="w-16 flex justify-center p-1 hover:bg-gray-50 rounded"
+                        >
+                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                        </button>
+                        <button
+                          onClick={() => onRemovePacote(pacote.id)}
+                          className="w-10 flex justify-center p-1 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </button>
                       </div>
-                    </div>
-                    <button
-                      onClick={() => handlePacoteClick(pacote)}
-                      className="w-16 flex justify-center p-1 hover:bg-gray-50 rounded"
-                    >
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </button>
-                    <button
-                      onClick={() => onRemovePacote(pacote.id)}
-                      className="w-10 flex justify-center p-1 hover:bg-red-50 rounded"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </button>
+                    ))}
                   </div>
-                ))}
+                </ScrollArea>
               </div>
             )}
           </div>
