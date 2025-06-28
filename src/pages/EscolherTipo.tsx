@@ -18,6 +18,7 @@ const EscolherTipo = () => {
   const [localTransferencia, setLocalTransferencia] = useState('');
   const [showTransferencia, setShowTransferencia] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const locaisTransferencia = [
     'Centro de Distribuição SP',
@@ -58,17 +59,60 @@ const EscolherTipo = () => {
     setShowConfirmModal(true);
   };
 
-  const confirmarAcao = () => {
-    if (tipoServico === 'recebimento') {
-      // Adiciona ao estoque local
-      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
-      const updatedStock = [...existingStock, ...pacotes];
-      localStorage.setItem('userStock', JSON.stringify(updatedStock));
-      
-      toast({
-        title: "Recebimento finalizado!",
-        description: `${pacotes.length} pacotes recebidos no estoque`,
+  const sendToEndpoint = async (barcodes: string[]) => {
+    try {
+      const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
+        },
+        body: JSON.stringify({
+          barcodes: barcodes
+        })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      console.log('Barcodes enviados com sucesso:', barcodes);
+      return true;
+    } catch (error) {
+      console.error('Erro ao enviar barcodes:', error);
+      toast({
+        title: "Erro ao processar",
+        description: "Falha ao enviar dados para o servidor",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const confirmarAcao = async () => {
+    setIsLoading(true);
+
+    if (tipoServico === 'recebimento') {
+      // Extrai os códigos dos pacotes
+      const barcodes = pacotes.map(p => p.codigo);
+      
+      // Envia para o endpoint
+      const success = await sendToEndpoint(barcodes);
+      
+      if (success) {
+        // Adiciona ao estoque local
+        const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+        const updatedStock = [...existingStock, ...pacotes];
+        localStorage.setItem('userStock', JSON.stringify(updatedStock));
+        
+        toast({
+          title: "Recebimento finalizado!",
+          description: `${pacotes.length} pacotes recebidos no estoque`,
+        });
+        
+        setShowConfirmModal(false);
+        navigate('/estoque');
+      }
     } else if (tipoServico === 'transferencia') {
       // Remove do estoque local
       const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
@@ -80,10 +124,12 @@ const EscolherTipo = () => {
         title: "Transferência finalizada!",
         description: `${pacotes.length} pacotes enviados para ${localTransferencia}`,
       });
+      
+      setShowConfirmModal(false);
+      navigate('/estoque');
     }
     
-    setShowConfirmModal(false);
-    navigate('/estoque');
+    setIsLoading(false);
   };
 
   return (
@@ -187,14 +233,14 @@ const EscolherTipo = () => {
         <div className="max-w-md mx-auto">
           <Button
             onClick={handleFinalizar}
-            disabled={!tipoServico || (tipoServico === 'transferencia' && !localTransferencia)}
+            disabled={!tipoServico || (tipoServico === 'transferencia' && !localTransferencia) || isLoading}
             className={`w-full py-3 rounded-xl font-medium text-white transition-colors ${
-              tipoServico && (tipoServico !== 'transferencia' || localTransferencia)
+              tipoServico && (tipoServico !== 'transferencia' || localTransferencia) && !isLoading
                 ? 'bg-orange-500 hover:bg-orange-600'
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
           >
-            Finalizar serviço
+            {isLoading ? 'Processando...' : 'Finalizar serviço'}
           </Button>
         </div>
       </div>
@@ -212,12 +258,17 @@ const EscolherTipo = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col space-y-2 sm:flex-col sm:space-y-2 sm:space-x-0">
-            <Button onClick={confirmarAcao} className="w-full bg-orange-500 hover:bg-orange-600">
-              Confirmar
+            <Button 
+              onClick={confirmarAcao} 
+              disabled={isLoading}
+              className="w-full bg-orange-500 hover:bg-orange-600"
+            >
+              {isLoading ? 'Processando...' : 'Confirmar'}
             </Button>
             <Button 
               variant="outline" 
               onClick={() => setShowConfirmModal(false)}
+              disabled={isLoading}
               className="w-full"
             >
               Cancelar
