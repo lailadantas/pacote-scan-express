@@ -31,8 +31,8 @@ const EscolherTipo = () => {
 
   const handleTipoChange = (value: string) => {
     setTipoServico(value);
-    setShowTransferencia(value === 'transferencia');
-    if (value !== 'transferencia') {
+    setShowTransferencia(value === 'saida');
+    if (value !== 'saida') {
       setLocalTransferencia('');
     }
   };
@@ -41,13 +41,13 @@ const EscolherTipo = () => {
     if (!tipoServico) {
       toast({
         title: "Selecione o tipo de serviço",
-        description: "Escolha entre Recebimento ou Entrega de transferência",
+        description: "Escolha entre Entrada ou Saída",
         variant: "destructive",
       });
       return;
     }
 
-    if (tipoServico === 'transferencia' && !localTransferencia) {
+    if (tipoServico === 'saida' && !localTransferencia) {
       toast({
         title: "Selecione o local de transferência",
         description: "Escolha para onde os pacotes serão transferidos",
@@ -59,27 +59,35 @@ const EscolherTipo = () => {
     setShowConfirmModal(true);
   };
 
-  const sendToEndpoint = async (barcodes: string[]) => {
+  const sendToEndpoint = async (barcodes: string[], type: string, userId?: string) => {
     try {
+      const requestBody: any = {
+        type: type,
+        barcodes: barcodes
+      };
+
+      // Adiciona user_id se estiver disponível
+      if (userId) {
+        requestBody.user_id = userId;
+      }
+
       const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
         },
-        body: JSON.stringify({
-          barcodes: barcodes
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log('Barcodes enviados com sucesso:', barcodes);
+      console.log('Dados enviados com sucesso:', requestBody);
       return true;
     } catch (error) {
-      console.error('Erro ao enviar barcodes:', error);
+      console.error('Erro ao enviar dados:', error);
       toast({
         title: "Erro ao processar",
         description: "Falha ao enviar dados para o servidor",
@@ -92,12 +100,16 @@ const EscolherTipo = () => {
   const confirmarAcao = async () => {
     setIsLoading(true);
 
-    if (tipoServico === 'recebimento') {
+    // Recupera user_id do localStorage se disponível
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userId = userData.user_id || userData.id;
+
+    if (tipoServico === 'entrada') {
       // Extrai os códigos dos pacotes
       const barcodes = pacotes.map(p => p.codigo);
       
-      // Envia para o endpoint
-      const success = await sendToEndpoint(barcodes);
+      // Envia para o endpoint com type "recepcion"
+      const success = await sendToEndpoint(barcodes, 'recepcion', userId);
       
       if (success) {
         // Adiciona ao estoque local
@@ -106,27 +118,35 @@ const EscolherTipo = () => {
         localStorage.setItem('userStock', JSON.stringify(updatedStock));
         
         toast({
-          title: "Recebimento finalizado!",
+          title: "Entrada finalizada!",
           description: `${pacotes.length} pacotes recebidos no estoque`,
         });
         
         setShowConfirmModal(false);
         navigate('/estoque');
       }
-    } else if (tipoServico === 'transferencia') {
-      // Remove do estoque local
-      const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
-      const pacoteIds = pacotes.map(p => p.id);
-      const updatedStock = existingStock.filter(item => !pacoteIds.includes(item.id));
-      localStorage.setItem('userStock', JSON.stringify(updatedStock));
+    } else if (tipoServico === 'saida') {
+      // Extrai os códigos dos pacotes
+      const barcodes = pacotes.map(p => p.codigo);
       
-      toast({
-        title: "Transferência finalizada!",
-        description: `${pacotes.length} pacotes enviados para ${localTransferencia}`,
-      });
+      // Envia para o endpoint com type "salida"
+      const success = await sendToEndpoint(barcodes, 'salida', userId);
       
-      setShowConfirmModal(false);
-      navigate('/estoque');
+      if (success) {
+        // Remove do estoque local
+        const existingStock = JSON.parse(localStorage.getItem('userStock') || '[]');
+        const pacoteIds = pacotes.map(p => p.id);
+        const updatedStock = existingStock.filter(item => !pacoteIds.includes(item.id));
+        localStorage.setItem('userStock', JSON.stringify(updatedStock));
+        
+        toast({
+          title: "Saída finalizada!",
+          description: `${pacotes.length} pacotes enviados para ${localTransferencia}`,
+        });
+        
+        setShowConfirmModal(false);
+        navigate('/estoque');
+      }
     }
     
     setIsLoading(false);
@@ -160,42 +180,42 @@ const EscolherTipo = () => {
           <div className="space-y-4 mb-8">
             <RadioGroup value={tipoServico} onValueChange={handleTipoChange}>
               <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl transition-colors ${
-                tipoServico === 'recebimento' 
+                tipoServico === 'entrada' 
                   ? 'border-orange-500 bg-orange-50' 
                   : 'border-gray-200 bg-white'
               }`}>
                 <RadioGroupItem 
-                  value="recebimento" 
-                  id="recebimento"
-                  className={tipoServico === 'recebimento' ? 'border-orange-500 text-orange-500' : ''}
+                  value="entrada" 
+                  id="entrada"
+                  className={tipoServico === 'entrada' ? 'border-orange-500 text-orange-500' : ''}
                 />
                 <Label 
-                  htmlFor="recebimento" 
+                  htmlFor="entrada" 
                   className={`flex-1 cursor-pointer ${
-                    tipoServico === 'recebimento' ? 'text-orange-600' : 'text-gray-900'
+                    tipoServico === 'entrada' ? 'text-orange-600' : 'text-gray-900'
                   }`}
                 >
-                  Recebimento
+                  Entrada
                 </Label>
               </div>
               
               <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl transition-colors ${
-                tipoServico === 'transferencia' 
+                tipoServico === 'saida' 
                   ? 'border-orange-500 bg-orange-50' 
                   : 'border-gray-200 bg-white'
               }`}>
                 <RadioGroupItem 
-                  value="transferencia" 
-                  id="transferencia"
-                  className={tipoServico === 'transferencia' ? 'border-orange-500 text-orange-500' : ''}
+                  value="saida" 
+                  id="saida"
+                  className={tipoServico === 'saida' ? 'border-orange-500 text-orange-500' : ''}
                 />
                 <Label 
-                  htmlFor="transferencia" 
+                  htmlFor="saida" 
                   className={`flex-1 cursor-pointer ${
-                    tipoServico === 'transferencia' ? 'text-orange-600' : 'text-gray-900'
+                    tipoServico === 'saida' ? 'text-orange-600' : 'text-gray-900'
                   }`}
                 >
-                  Entrega de transferência
+                  Saída
                 </Label>
               </div>
             </RadioGroup>
@@ -233,9 +253,9 @@ const EscolherTipo = () => {
         <div className="max-w-md mx-auto">
           <Button
             onClick={handleFinalizar}
-            disabled={!tipoServico || (tipoServico === 'transferencia' && !localTransferencia) || isLoading}
+            disabled={!tipoServico || (tipoServico === 'saida' && !localTransferencia) || isLoading}
             className={`w-full py-3 rounded-xl font-medium text-white transition-colors ${
-              tipoServico && (tipoServico !== 'transferencia' || localTransferencia) && !isLoading
+              tipoServico && (tipoServico !== 'saida' || localTransferencia) && !isLoading
                 ? 'bg-orange-500 hover:bg-orange-600'
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
@@ -251,9 +271,9 @@ const EscolherTipo = () => {
           <DialogHeader>
             <DialogTitle>Confirmar ação</DialogTitle>
             <DialogDescription>
-              {tipoServico === 'recebimento' 
-                ? `Deseja realmente finalizar o recebimento de ${pacotes.length} pacotes?`
-                : `Deseja realmente finalizar a transferência de ${pacotes.length} pacotes para ${localTransferencia}?`
+              {tipoServico === 'entrada' 
+                ? `Deseja realmente finalizar a entrada de ${pacotes.length} pacotes?`
+                : `Deseja realmente finalizar a saída de ${pacotes.length} pacotes para ${localTransferencia}?`
               }
             </DialogDescription>
           </DialogHeader>
