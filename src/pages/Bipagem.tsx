@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
@@ -36,6 +35,77 @@ const Bipagem = () => {
     return "Bipagem de itens";
   };
 
+  const sendToEndpoint = async (barcode: string) => {
+    try {
+      const requestBody: any = {
+        type: "register",
+        barcodes: [barcode]
+      };
+
+      // Recupera user_id e person_id do localStorage se disponível
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userId = userData.user_id || userData.id;
+      const personId = userData.person_id;
+      const token = userData.token || localStorage.getItem('authToken');
+
+      // Adiciona user_id se estiver disponível
+      if (userId) {
+        requestBody.user_id = userId;
+      }
+
+      // Adiciona person_id se estiver disponível
+      if (personId) {
+        requestBody.person_id = personId;
+      }
+
+      console.log('Enviando código para registro:', requestBody);
+      console.log('Token utilizado:', token ? 'Token encontrado' : 'Token não encontrado');
+
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
+      };
+
+      // Adiciona o token Bearer se estiver disponível
+      if (token) {
+        headers['X-Auth-Token'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('Status da resposta:', response.status);
+      
+      const responseData = await response.json();
+      console.log('Dados da resposta:', responseData);
+
+      if (!response.ok) {
+        // Se o status for 500 mas a resposta indica "No item to return got found"
+        // Pode ser que o endpoint esteja funcionando mas não encontrou os itens
+        if (response.status === 500 && responseData.message === "No item to return got found") {
+          console.warn('Endpoint retornou: itens não encontrados, mas continuando processamento');
+          return true; // Continua o processamento mesmo com este "erro"
+        }
+        
+        throw new Error(`HTTP error! status: ${response.status} - ${responseData.message || 'Erro desconhecido'}`);
+      }
+
+      console.log('Código registrado com sucesso:', barcode);
+      return true;
+    } catch (error) {
+      console.error('Erro ao registrar código:', error);
+      toast({
+        title: "Erro ao registrar código",
+        description: error instanceof Error ? error.message : "Falha ao enviar dados para o servidor",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const handleCodeDetected = async (code: string) => {
     console.log('Código detectado:', code);
     
@@ -54,10 +124,13 @@ const Bipagem = () => {
       return;
     }
 
+    // Envia o código para o endpoint de registro
+    const registrationSuccess = await sendToEndpoint(code);
+
     // Valida o código via API
     const trackingResult = await validateFreightOrder(code);
     
-    if (trackingResult.success) {
+    if (registrationSuccess && trackingResult.success) {
       playSuccessBeep();
       const newPacote: Pacote = {
         id: Date.now().toString(),
