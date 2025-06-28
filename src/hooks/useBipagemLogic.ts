@@ -186,10 +186,36 @@ export const useBipagemLogic = () => {
 
       console.log('Status da resposta:', response.status);
       
-      const responseData = await response.json();
+      // Verificar se a resposta é texto (caso de "Esses pacotes já foram recebidos")
+      const contentType = response.headers.get('content-type');
+      let responseData: any;
+      
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        responseData = await response.text();
+      }
+      
       console.log('Dados da resposta:', responseData);
 
       if (response.ok) {
+        // Verificar se a resposta contém "Esses pacotes já foram recebidos"
+        if (typeof responseData === 'string' && responseData.includes('Esses pacotes já foram recebidos')) {
+          console.log('Pacote já foi recebido, mostrando dialog de confirmação');
+          playErrorBeep();
+          
+          // Identificar o código do pacote na resposta
+          const lines = responseData.split('\n');
+          const packageCode = lines.find(line => line.trim() && !line.includes('Esses pacotes já foram recebidos'))?.trim();
+          
+          if (packageCode === barcode) {
+            setPendingCode(barcode);
+            setShowDeleteDialog(true);
+            setToast({ show: false, type: 'loading', title: '' });
+            return 'already_exists'; // Retorno especial para indicar que já existe
+          }
+        }
+        
         playSuccessBeep();
         setToast({
           show: true,
@@ -206,15 +232,15 @@ export const useBipagemLogic = () => {
           show: true,
           type: 'error',
           title: `Erro ao ${type === 'register' ? 'registrar' : 'remover'}`,
-          description: responseData.message || 'Erro desconhecido'
+          description: typeof responseData === 'object' ? responseData.message || 'Erro desconhecido' : responseData
         });
 
-        if (response.status === 500 && responseData.message === "No item to return got found") {
+        if (response.status === 500 && (typeof responseData === 'object' && responseData.message === "No item to return got found")) {
           console.warn('Endpoint retornou: itens não encontrados, mas continuando processamento');
           return true;
         }
         
-        throw new Error(`HTTP error! status: ${response.status} - ${responseData.message || 'Erro desconhecido'}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${typeof responseData === 'object' ? responseData.message || 'Erro desconhecido' : responseData}`);
       }
     } catch (error) {
       console.error(`Erro ao ${type === 'register' ? 'registrar' : 'remover'} código:`, error);
@@ -242,9 +268,14 @@ export const useBipagemLogic = () => {
     }
 
     console.log('Pacote não existe, procedendo com registro');
-    const registrationSuccess = await sendToEndpoint(code, 'register');
+    const registrationResult = await sendToEndpoint(code, 'register');
 
-    if (registrationSuccess) {
+    // Se o resultado for 'already_exists', o modal já foi aberto pelo sendToEndpoint
+    if (registrationResult === 'already_exists') {
+      return;
+    }
+
+    if (registrationResult === true) {
       const trackingResult = await validateFreightOrder(code);
       
       const newPacote: Pacote = {
