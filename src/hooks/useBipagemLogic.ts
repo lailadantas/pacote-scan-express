@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useBeepSounds } from '@/hooks/useBeepSounds';
@@ -331,7 +332,7 @@ export const useBipagemLogic = () => {
     });
   };
 
-  const finalizarBipagem = () => {
+  const finalizarBipagem = async () => {
     if (pacotes.length === 0) {
       playErrorBeep();
       setToast({
@@ -342,12 +343,92 @@ export const useBipagemLogic = () => {
       });
       return;
     }
-    
-    if (isColeta) {
-      navigate(`/assinatura-coleta/${pontoId}`);
-    } else {
-      navigate('/escolhertipo', { 
-        state: { pacotes } 
+
+    const sessionData = checkSessionData();
+    if (!sessionData) return;
+
+    try {
+      playRequestBeep();
+      setToast({
+        show: true,
+        type: 'loading',
+        title: 'Finalizando bipagem...',
+        description: 'Processando confirmação'
+      });
+
+      const requestBody = {
+        type: 'confirm',
+        user_id: sessionData.userId,
+        person_id: sessionData.personId
+      };
+
+      console.log('Finalizando bipagem:', requestBody);
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o=',
+        'X-Auth-Token': `Bearer ${sessionData.token}`
+      };
+
+      const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('Status da resposta de finalização:', response.status);
+      
+      // Verificar se a resposta é texto ou JSON
+      const contentType = response.headers.get('content-type');
+      let responseData: any;
+      
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        responseData = await response.text();
+      }
+      
+      console.log('Dados da resposta de finalização:', responseData);
+
+      // Se o status é 200, considera sucesso independentemente da mensagem
+      if (response.ok) {
+        playSuccessBeep();
+        
+        // Verificar se há mensagem de erro nos pacotes
+        const hasError = typeof responseData === 'string' && responseData.includes('Esses pacotes deram erro');
+        
+        setToast({
+          show: true,
+          type: hasError ? 'error' : 'success',
+          title: hasError ? 'Alguns pacotes com erro' : 'Bipagem finalizada!',
+          description: hasError ? 'Verifique os pacotes no estoque' : 'Todos os pacotes foram processados'
+        });
+
+        // Sempre redirecionar para o estoque, mesmo com erro nos pacotes
+        setTimeout(() => {
+          if (isColeta) {
+            navigate(`/assinatura-coleta/${pontoId}`);
+          } else {
+            navigate('/estoque', { replace: true });
+          }
+        }, 2000);
+      } else {
+        playErrorBeep();
+        setToast({
+          show: true,
+          type: 'error',
+          title: 'Erro ao finalizar',
+          description: typeof responseData === 'object' ? responseData.message || 'Erro desconhecido' : responseData
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao finalizar bipagem:', error);
+      playErrorBeep();
+      setToast({
+        show: true,
+        type: 'error',
+        title: 'Erro de conexão',
+        description: 'Falha ao conectar com o servidor'
       });
     }
   };
