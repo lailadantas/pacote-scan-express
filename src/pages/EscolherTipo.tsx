@@ -51,14 +51,26 @@ const EscolherTipo = () => {
         requestBody.person_id = personId;
       }
 
+      // Recupera o token do localStorage
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const token = userData.token || localStorage.getItem('authToken');
+
       console.log('Enviando dados para o endpoint:', requestBody);
+      console.log('Token utilizado:', token ? 'Token encontrado' : 'Token não encontrado');
+
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic U21hcnRQb250bzp+ZmdrVUM0NVkyI1o='
+      };
+
+      // Adiciona o token Bearer se estiver disponível
+      if (token) {
+        headers['X-Auth-Token'] = `Bearer ${token}`;
+      }
 
       const response = await fetch('https://n8n.smartenvios.com/webhook/f93ce6e9-0d1e-4165-9aa0-1c8edf3f6dcd', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic U21hcnRQb250bzp+ZmtrVUM0NVkyI1o='
-        },
+        headers: headers,
         body: JSON.stringify(requestBody)
       });
 

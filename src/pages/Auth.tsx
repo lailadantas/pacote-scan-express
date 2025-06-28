@@ -77,6 +77,7 @@ const Auth = () => {
         };
         
         console.log('Dados salvos no localStorage:', userData);
+        console.log('Token armazenado:', userData.token);
         
         localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('currentUser', JSON.stringify(userData));
