@@ -19,7 +19,7 @@ declare module 'quagga' {
     numOfWorkers: number;
     frequency: number;
     decoder: {
-      readers: string[];
+      readers: string[] | readonly string[];
     };
     locate: boolean;
   }
