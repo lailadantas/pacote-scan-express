@@ -138,10 +138,10 @@ const EstoqueChart = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Volumetria por Dia</h3>
-        <div className="h-64 flex items-center justify-center">
-          <p className="text-gray-500">Carregando gráfico...</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm w-full overflow-hidden">
+        <h3 className="text-base font-semibold text-gray-900 mb-3">Volumetria por Dia</h3>
+        <div className="h-48 flex items-center justify-center">
+          <p className="text-gray-500 text-sm">Carregando gráfico...</p>
         </div>
       </div>
     );
@@ -149,44 +149,47 @@ const EstoqueChart = () => {
 
   if (chartData.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Volumetria por Dia</h3>
-        <div className="h-64 flex items-center justify-center">
-          <p className="text-gray-500">Nenhum dado disponível</p>
+      <div className="bg-white rounded-2xl p-3 shadow-sm w-full overflow-hidden">
+        <h3 className="text-base font-semibold text-gray-900 mb-3">Volumetria por Dia</h3>
+        <div className="h-48 flex items-center justify-center">
+          <p className="text-gray-500 text-sm">Nenhum dado disponível</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Volumetria por Dia</h3>
-      <ChartContainer config={chartConfig} className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="displayDate" 
-              tick={{ fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <ChartTooltip 
-              content={<ChartTooltipContent />}
-            />
-            <Bar 
-              dataKey="total" 
-              fill="var(--color-total)" 
-              radius={[4, 4, 0, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartContainer>
+    <div className="bg-white rounded-2xl p-3 shadow-sm w-full overflow-hidden">
+      <h3 className="text-base font-semibold text-gray-900 mb-3">Volumetria por Dia</h3>
+      <div className="w-full overflow-x-auto">
+        <ChartContainer config={chartConfig} className="h-48 min-w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="displayDate" 
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={30}
+              />
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+              />
+              <Bar 
+                dataKey="total" 
+                fill="var(--color-total)" 
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
     </div>
   );
 };
