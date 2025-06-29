@@ -57,10 +57,10 @@ export const useQuaggaScanner = (
           ]
         },
         locate: true
-      };
+      } as const;
 
       return new Promise((resolve, reject) => {
-        Quagga.init(config, (err) => {
+        Quagga.init(config, (err: any) => {
           if (err) {
             console.error('QuaggaJS initialization error:', err);
             setError('Failed to initialize camera');
