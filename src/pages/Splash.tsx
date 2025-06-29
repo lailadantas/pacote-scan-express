@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -13,7 +12,7 @@ const Splash = () => {
       if (isLoggedIn === 'true') {
         navigate('/home');
       } else {
-        navigate('/onboarding');
+        navigate('/auth');
       }
     }, 3000);
 

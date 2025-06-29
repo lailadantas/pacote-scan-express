@@ -1,10 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Splash from "./pages/Splash";
-import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import TipoDeUsuario from "./pages/TipoDeUsuario";
 import UsuarioTipoPonto from "./pages/UsuarioTipoPonto";
@@ -62,7 +60,6 @@ const App = () => (
       <Routes>
         <Route path="/" element={<Navigate to="/splash" replace />} />
         <Route path="/splash" element={<Splash />} />
-        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/tipodeusuario" element={<TipoDeUsuario />} />
         <Route path="/usuariotipoponto" element={<UsuarioTipoPonto />} />
